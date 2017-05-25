@@ -1,0 +1,17 @@
+# PHPStorm project files
+.idea
+*.iml
+out
+gen
+
+# Sublime Text
+*.sublime*
+
+# Eclipse
+.buildpath
+.project
+.settings
+
+/vendor/
+/bash/
+

@@ -1,0 +1,33 @@
+{
+  "name": "joomla-projects/gsoc17_pr_testing_platform",
+  "description": "A PR testing platform to automate the creation of a testing environment and speed-up Pull Request testing.",
+  "minimum-stability": "stable",
+  "license": "GPL2+",
+  "authors": [
+    {
+      "name": "Joomla! Project"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Joomla\\PRTestingPlatform\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Joomla\\Tests\\PRTestingPlatform\\": "tests"
+    }
+  },
+  "require": {
+    "php": ">=5.4",
+    "greencape/php-versions": "@dev",
+    "symfony/yaml": "^3.2",
+    "greencape/joomla-cli": "^0.1.0",
+    "alchemy/zippy": "^0.4.4"
+  },
+  "require-dev": {
+    "joomla-projects/joomla-testing-robo": "~1",
+    "consolidation/robo": "^1.0.0",
+    "phpunit/phpunit": "^5.7"
+  }
+}
