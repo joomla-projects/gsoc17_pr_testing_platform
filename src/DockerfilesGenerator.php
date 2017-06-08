@@ -79,6 +79,12 @@ class DockerfilesGenerator
 		return $branches;
 	}
 
+	/**
+	 * Generates the dockerfiles given the permutation of all
+	 * existent Joomla! CMS branches and php versions
+	 *
+	 * @return  void
+	 */
 	public function generateDockerfiles(){
 		$phpVersions = $this->getPhpVersions();
 		$branches = $this->getJoomlaCMSBranches();
@@ -124,9 +130,6 @@ class DockerfilesGenerator
 				}
 
 				file_put_contents($subdir . "Dockerfile", $dockerfile);
-
-				copy(dirname("docker-entrypoint.sh") . "/docker-entrypoint.sh", $subdir);
-				copy(dirname("makedb.php") . "/makedb.php", $subdir);
 			}
 		}
 	}
