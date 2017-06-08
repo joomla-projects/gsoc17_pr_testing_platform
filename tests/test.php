@@ -8,16 +8,13 @@
 
 namespace Joomla\Tests\PRTestingPlatform;
 
-use Joomla\PRTestingPlatform\DockerSwarmHandler;
+namespace Joomla\PRTestingPlatform\loadTasks;
 
-require '../vendor/autoload.php';
+use Joomla\PRTestingPlatform\DockerfilesGenerator;
 
-$swarm = new DockerSwarmHandler("Test1");
+require __DIR__ . '/../vendor/autoload.php';
 
-$swarm->generateSwarmInitScript();
+$generator = new DockerfilesGenerator('php.xml');
 
-$swarm->initSwarm();
+$generator->generateDockerfiles();
 
-$swarm->addWorkerNode();
-
-//$swarm->cleanSwarm();
