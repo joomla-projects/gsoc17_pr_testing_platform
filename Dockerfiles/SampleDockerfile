@@ -1,4 +1,4 @@
-FROM php:7.1-apache
+FROM php:{PHPVERSION}-apache
 
 # Enable Apache Rewrite Module
 RUN a2enmod rewrite
@@ -25,7 +25,7 @@ ENV JOOMLA_DB_NAME joomla
 
 # Download package and extract to web volume
 RUN mkdir /usr/src/joomla; \
-	git clone --depth 1 -b 3.8-dev --single-branch https://github.com/joomla/joomla-cms.git /usr/src/joomla ; \
+	git clone --depth 1 -b {BRANCH} --single-branch https://github.com/joomla/joomla-cms.git /usr/src/joomla ; \
 	chown -R www-data:www-data /usr/src/joomla
 
 # Copy init scripts and custom .htaccess

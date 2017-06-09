@@ -3,12 +3,25 @@ FROM php:7.1-apache
 # Enable Apache Rewrite Module
 RUN a2enmod rewrite
 
+# Enable MySQL root user creation without interactive input
+RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections
+RUN echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections
+
 # Install PHP extensions
-RUN apt-get update ; apt-get install -y libpng12-dev libjpeg-dev libmcrypt-dev zip unzip git; \ rm -rf /var/lib/apt/lists/* ;\
+RUN apt-get update ; \
+	apt-get install -y libpng12-dev libjpeg-dev libmcrypt-dev zip unzip git libmysqlclient-dev mysql-server; \
+	rm -rf /var/lib/apt/lists/* ;\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
-	docker-php-ext-install gd
+	docker-php-ext-install gd; \
+	docker-php-ext-configure mysqli --with-png-dir=/usr --with-jpeg-dir=/usr; \
+    docker-php-ext-install mysqli
 
 VOLUME /var/www/html
+
+ENV JOOMLA_DB_HOST localhost
+ENV JOOMLA_DB_USER root
+ENV JOOMLA_DB_PASSWORD root
+ENV JOOMLA_DB_NAME joomla
 
 # Download package and extract to web volume
 RUN mkdir /usr/src/joomla; \
@@ -20,6 +33,8 @@ COPY docker-entrypoint.sh /entrypoint.sh
 COPY makedb.php /makedb.php
 
 RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf
+
+EXPOSE 8080 3306
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]

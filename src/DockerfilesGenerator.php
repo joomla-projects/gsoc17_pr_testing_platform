@@ -85,7 +85,8 @@ class DockerfilesGenerator
 	 *
 	 * @return  void
 	 */
-	public function generateDockerfiles(){
+	public function generateDockerfiles()
+	{
 		$phpVersions = $this->getPhpVersions();
 		$branches = $this->getJoomlaCMSBranches();
 
@@ -100,27 +101,9 @@ class DockerfilesGenerator
 		{
 			foreach ($phpVersions as $phpVersion)
 			{
-				$dockerfile = "FROM php:" . $phpVersion . "-apache\n\n";
-				$dockerfile .= "# Enable Apache Rewrite Module\n";
-				$dockerfile .= "RUN a2enmod rewrite\n\n";
-				$dockerfile .= "# Install PHP extensions\n";
-				$dockerfile .= "RUN apt-get update ; ";
-				$dockerfile .= "apt-get install -y libpng12-dev libjpeg-dev libmcrypt-dev zip unzip git;";
-				$dockerfile .= " \\ rm -rf /var/lib/apt/lists/* ;\\\n";
-				$dockerfile .= "\tdocker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \\";
-				$dockerfile .= "\n\tdocker-php-ext-install gd\n\n";
-				$dockerfile .= "VOLUME /var/www/html\n\n";
-				$dockerfile .= "# Download package and extract to web volume\n";
-				$dockerfile .= "RUN mkdir /usr/src/joomla; \\\n";
-				$dockerfile .= "\tgit clone --depth 1 -b " . $branch . " --single-branch ";
-				$dockerfile .= "https://github.com/joomla/joomla-cms.git /usr/src/joomla ; \\\n";
-				$dockerfile .= "\tchown -R www-data:www-data /usr/src/joomla\n\n";
-				$dockerfile .= "# Copy init scripts and custom .htaccess\n";
-				$dockerfile .= "COPY docker-entrypoint.sh /entrypoint.sh\n";
-				$dockerfile .= "COPY makedb.php /makedb.php\n\n";
-				$dockerfile .= "RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf\n\n";
-				$dockerfile .= "ENTRYPOINT [\"/entrypoint.sh\"]\n";
-				$dockerfile .= "CMD [\"apache2-foreground\"]";
+				$dockerfile = file_get_contents($dir . "SampleDockerfile");
+				$dockerfile = str_replace("{PHPVERSION}", $phpVersion, $dockerfile);
+				$dockerfile = str_replace("{BRANCH}", $branch, $dockerfile);
 
 				$subdir = $dir . $branch . "-" . "php" . $phpVersion . "/";
 
