@@ -7,7 +7,7 @@ service mysql restart
 if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
         if [ -n "$MYSQL_PORT_3306_TCP" ]; then
                 if [ -z "$JOOMLA_DB_HOST" ]; then
-                        JOOMLA_DB_HOST='localhost'
+                        JOOMLA_DB_HOST='127.0.0.1'
                 else
                         echo >&2 "warning: both JOOMLA_DB_HOST and MYSQL_PORT_3306_TCP found"
                         echo >&2 "  Connecting to JOOMLA_DB_HOST ($JOOMLA_DB_HOST)"
@@ -58,9 +58,6 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 
         # Ensure the MySQL Database is created
         php /makedb.php "$JOOMLA_DB_HOST" "$JOOMLA_DB_USER" "$JOOMLA_DB_PASSWORD" "$JOOMLA_DB_NAME"
-
-	# Create Link between joomla folder and apache2 default folder
-	ln -s -f /usr/src/joomla/* /var/www/html
 
         echo >&2 "========================================================================"
         echo >&2

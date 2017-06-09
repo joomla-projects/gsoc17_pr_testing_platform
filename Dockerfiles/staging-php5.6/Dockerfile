@@ -18,7 +18,7 @@ RUN apt-get update ; \
 
 VOLUME /var/www/html
 
-ENV JOOMLA_DB_HOST localhost
+ENV JOOMLA_DB_HOST 127.0.0.1
 ENV JOOMLA_DB_USER root
 ENV JOOMLA_DB_PASSWORD root
 ENV JOOMLA_DB_NAME joomla
@@ -35,6 +35,9 @@ COPY makedb.php /makedb.php
 RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf
 
 EXPOSE 8080 3306
+
+# Create Link between joomla folder and apache2 default folder
+RUN ln -s -f /usr/src/joomla/* /var/www/html
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]
