@@ -8,13 +8,14 @@
 
 namespace Joomla\Tests\PRTestingPlatform;
 
-namespace Joomla\PRTestingPlatform\loadTasks;
-
-use Joomla\PRTestingPlatform\DockerfilesGenerator;
+use Joomla\Testing\PRTestingPlatform\IssueComment;
+use Joomla\Testing\PRTestingPlatform\JoomlaManualInstaller;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$generator = new DockerfilesGenerator('php.xml');
+// Replace 'organization' and 'repository' with valid ones, and place a valid PR id
+$issueComment = new IssueComment('organization', 'repository', 7);
 
-$generator->generateDockerfiles();
+// Replace 'username' and 'password' with a valid github username and password
+$issueComment->createComment('username', 'password', 'Commenting this to test the github API!!');
 

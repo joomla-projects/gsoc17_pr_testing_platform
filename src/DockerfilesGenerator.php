@@ -6,14 +6,14 @@
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace Joomla\PRTestingPlatform;
+namespace Joomla\Testing\PRTestingPlatform;
 
 use Joomla\Github\Github;
 
 /**
  * Class DockerImagesGenerator
  *
- * @package  Joomla\PRTestingPlatform
+ * @package  Joomla\Testing\PRTestingPlatform
  * @since    __DEPLOY_VERSION__
  */
 
