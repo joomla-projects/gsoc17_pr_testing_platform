@@ -1,0 +1,28 @@
+{# Copyright (C) 2017 Open Source Matters, Inc. All rights reserved. #}
+{# GNU General Public License version 2 or later; see LICENSE.txt #}
+
+{% extends "index.twig" %}
+
+{% block content %}
+
+    <div class="page-header">
+        <h1>{{ log_type|title }} Log</h1>
+    </div>
+
+    @todo prettifyMe
+
+    {% for entry in log %}
+
+        <pre>{{ entry }}</pre>
+
+    {% else %}
+
+        <div class="alert alert-warning">
+            The log is empty :(
+        </div>
+
+    {% endfor %}
+
+    {#{ dump(log|raw) }#}
+
+{% endblock %}

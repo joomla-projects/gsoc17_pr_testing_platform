@@ -1,0 +1,40 @@
+{# Copyright (C) 2015 Open Source Matters, Inc. All rights reserved. #}
+{# GNU General Public License version 2 or later; see LICENSE.txt#}
+
+{% if user.id %}
+    <form method="post" action="{{ uri.base.path }}instance/add" class="testForm form-inline" name="testRequestForm" id="testContainer">
+        <h4>{{ 'Test request for PR'|_ }} #{{ item.issue_number }} ({{ item.commits|json_decode|last.sha[:7] }})
+
+            <a class="help-icon" href="https://git-scm.com/book/en/v2/Git-Internals-Git-Objects">
+                <i class="help-icon icon-help"></i>
+                The git SHA
+            </a>
+
+        </h4>
+
+        <p>
+            Select the PHP version and generate your Joomla! instance for this PR.
+        </p>
+
+
+        <select name="instance[php_version]" id="phpVersion" class="toclear input-medium-160">
+            <option value="0" selected="selected">- PHP Version -</option>
+            <option value="56">PHP 5.6</option>
+            <option value="70">PHP 7.0</option>
+            <option value="71">PHP 7.1</option>
+        </select>
+
+        <br>
+
+        <br>
+
+        <input type="hidden" name="instance[user_id]" value="{{ user.id }}"/>
+        <input type="hidden" name="instance[pr_id]" value="{{ item.issue_number }}"/>
+
+        <a class="btn btn-primary" href="javascript:" onclick="document.testRequestForm.submit();">
+            {{ "Generate Joomla! instance"|_ }}
+        </a>
+    </form>
+{% endif %}
+
+

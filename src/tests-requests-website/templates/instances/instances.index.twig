@@ -1,0 +1,43 @@
+{# Copyright (C) 2017 Open Source Matters, Inc. All rights reserved. #}
+{# GNU General Public License version 2 or later; see LICENSE.txt #}
+
+{% extends "index.twig" %}
+
+{% block title %}{{ parent() }} | {{ "Instances"|_ }}{% endblock %}
+
+{% block headerText %} - {{ "Joomla Instances"|_ }}{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <h1>{{ "Joomla! Instances List"|_ }}</h1>
+    </div>
+
+
+    <table class="table table-bordered table-hover">
+        <tr>
+            <th>{{ "Instance"|_ }}</th>
+            <th>{{ "Instance URL"|_ }}</th>
+            <th>{{ "Discard?"|_ }}</th>
+        </tr>
+
+        {% for instance in instances %}
+                <tr>
+                    <td>
+                        <a href="{{ uri.base.path }}instance/{{ instance.instance_id }}">
+                            Joomla Instance #{{ instance.instance_id }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="http://{{ instance.instance_id }}.dbox-tests.ml" target="_blank">
+                            {{ instance.instance_id }}.dbox-tests.ml
+                        </a>
+                    </td>
+                    <td class="center valign-center">
+                        <a class="btn btn-danger" href="{{ uri.base.path }}instance/{{ instance.instance_id }}/delete">{{ "Discard"|_ }}</a>
+                    </td>
+                </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+
