@@ -1,0 +1,432 @@
+###
+###  ---------------------------------------------------
+###  D E V I L B O X   R U N - T I M E   S E T T I N G S
+###  ---------------------------------------------------
+###
+###  All the following settings are applied during
+###  $ docker-compose up
+###
+###  No need to rebuild any dockers!
+###
+
+
+###
+### Show all executed commands in each
+### docker image during docker-compose up?
+###
+### 1: Yes
+### 0: No
+DEBUG_COMPOSE_ENTRYPOINT=0
+
+
+###
+### Relative or absolute path to the devilbox repository.
+### (Used as a prefix for all mount paths)
+### There is no need to change this.
+###
+### The only exception is for OSX users wanting to use NFS
+### mounts instead of Filesystem mounts due to degraded performance
+### on OSX.
+###
+### Note: When changing this variable you must re-create the container.
+###       Simply remove it, it will be auto-created during the next start:
+###
+### $ docker-compose rm -f
+###
+DEVILBOX_PATH=.
+
+
+###
+### At what IP address should the docker services listen
+### on the Host computer?
+###
+### The specified default should be fine for Linux and OSX (127.0.0.1:).
+### If you are on windows, you will probably have to change
+### it to the IP address of the docker machine.
+###
+### a.) Leave blank, to listen on all interfaces (no trailing color ':')
+###    LOCAL_LISTEN_ADDR=
+### b.) If an IP is specified, note the trailing colon ':'
+###    LOCAL_LISTEN_ADDR=127.0.0.1:
+###
+LOCAL_LISTEN_ADDR=127.0.0.1:
+
+
+###
+### This is the domain suffix your projects will be made available
+### with mass-virtual-hosting.
+### It is also required for the internal DNS server to be setup.
+###
+### Note: Only ALPHA ([a-zA-Z]+) characters are supported.
+###
+### Example:
+###   TLD_SUFFIX=loc
+### Makes your project available under xxxx.loc
+###
+### Example:
+###   TLD_SUFFIX=local
+### Makes your project available under xxxx.local
+###
+TLD_SUFFIX=loc
+
+
+###
+### TLD_SUFFIX domains are checked if they are set in the
+### host computer /etc/hosts or available via attached DNS server.
+### Timeout is done on vhosts.php (intranet) via ajax calls.
+### In order to keep performance, set this to a low value.
+### DNS checks might not succeed in time on slow machines.
+### If DNS is valid, but timeout is expired, set this to a higher value.
+###
+### DNS_CHECK_TIMEOUT value is how many seconds to time out
+### Default is to timeout after 1 second (DNS_CHECK_TIMEOUT=1)
+###
+DNS_CHECK_TIMEOUT=1
+
+
+###
+### Set your user id and group id
+###
+### This should be changed to the value of your local
+### users uid and gid
+###
+### Type `id` on the terminal to find out your values
+###
+NEW_UID=1000
+NEW_GID=1000
+
+
+###
+### Timezone for all dockers and service config files
+###
+TIMEZONE=Europe/Berlin
+
+
+
+################################################################################
+###
+### 1. Choose Images (Version)
+###
+################################################################################
+
+###
+### You can choose any combination of httpd, mysql, postgresql or php.
+### Each of them are fully compatible between one another.
+###
+
+
+###
+### 1.1 Choose PHP Server Image
+###
+#PHP_SERVER=php-fpm-5.4
+#PHP_SERVER=php-fpm-5.5
+#PHP_SERVER=php-fpm-5.6
+#PHP_SERVER=php-fpm-7.0
+PHP_SERVER=php-fpm-7.1
+#PHP_SERVER=php-fpm-7.2
+#PHP_SERVER=hhvm-latest
+
+
+###
+### 1.2 Choose HTTPD Server Image
+###
+#HTTPD_SERVER=apache-2.2
+#HTTPD_SERVER=apache-2.4
+HTTPD_SERVER=nginx-stable
+#HTTPD_SERVER=nginx-mainline
+
+
+###
+### 1.3 Choose MySQL Server Image
+###
+#MYSQL_SERVER=mysql-5.5
+#MYSQL_SERVER=mysql-5.6
+#MYSQL_SERVER=mysql-5.7
+#MYSQL_SERVER=mysql-8.0
+#MYSQL_SERVER=mariadb-5.5
+#MYSQL_SERVER=mariadb-10.0
+MYSQL_SERVER=mariadb-10.1
+#MYSQL_SERVER=mariadb-10.2
+#MYSQL_SERVER=mariadb-10.3
+#MYSQL_SERVER=percona-5.5
+#MYSQL_SERVER=percona-5.6
+#MYSQL_SERVER=percona-5.7
+
+
+###
+### 1.4 Choose PostgreSQL Server Image
+###
+#PGSQL_SERVER=9.1
+#PGSQL_SERVER=9.2
+#PGSQL_SERVER=9.3
+#PGSQL_SERVER=9.4
+#PGSQL_SERVER=9.5
+PGSQL_SERVER=9.6
+
+
+###
+### 1.5 Choose Redis Server Image
+###
+#REDIS_SERVER=2.8
+#REDIS_SERVER=3.0
+REDIS_SERVER=3.2
+
+
+###
+### 1.6 Choose Memcached Server Image
+###
+MEMCD_SERVER=1.4.21
+#MEMCD_SERVER=1.4.22
+#MEMCD_SERVER=1.4.23
+#MEMCD_SERVER=1.4.24
+#MEMCD_SERVER=1.4.25
+#MEMCD_SERVER=1.4.26
+#MEMCD_SERVER=1.4.27
+#MEMCD_SERVER=1.4.28
+#MEMCD_SERVER=1.4.29
+#MEMCD_SERVER=1.4.30
+#MEMCD_SERVER=1.4.31
+#MEMCD_SERVER=1.4.32
+#MEMCD_SERVER=1.4.33
+#MEMCD_SERVER=1.4.34
+#MEMCD_SERVER=1.4.35
+#MEMCD_SERVER=1.4.36
+#MEMCD_SERVER=latest
+
+
+###
+### 1.7 Choose Mongo Server Image
+###
+#MONGO_SERVER=2.8
+#MONGO_SERVER=3.0
+#MONGO_SERVER=3.2
+MONGO_SERVER=3.4
+#MONGO_SERVER=3.5
+
+
+
+################################################################################
+###
+### 2. Host Mounts (Your computer)
+###
+################################################################################
+
+###
+### Local filesystem path to www projects.
+###
+### Note: When changing this variable you must re-create the container.
+###       Simply remove it, it will be auto-created during the next start:
+###
+### $ docker-compose rm -f
+###
+HOST_PATH_HTTPD_DATADIR=./data/www
+
+###
+### Local filesystem path to mysql/mariadb datadir.
+###
+### This can be an existing mysql data directory or empty.
+### If it already is a mysql data directory with content,
+### it will be mounted into the docker and used.
+###
+### If this directory is empty, a new mysql database will be
+### created.
+###
+### Note: Inside this path, a subdirectory with the mysql|mariadb
+###       version will be created where the actual data resides.
+###       This is to protect databases from being altered by
+###       newer or older mysql|mariadb server versions.
+###
+### Note: When changing this variable you must re-create the container.
+###       Simply remove it, it will be auto-created during the next start:
+###
+### $ docker-compose rm -f
+###
+HOST_PATH_MYSQL_DATADIR=./data/mysql
+
+
+###
+### Local filesystem path to postgresql datadir.
+###
+### This can be an existing postgresql data directory or empty.
+### If it already is a postgresql data directory with content,
+### it will be mounted into the docker and used.
+###
+### If this directory is empty, a new postgresql database will be
+### created.
+###
+### Note: Inside this path, a subdirectory with the postgresql
+###       version will be created where the actual data resides.
+###       This is to protect databases from being altered by
+###       newer or older postgres server versions.
+###
+### Note: When changing this variable you must re-create the container.
+###       Simply remove it, it will be auto-created during the next start:
+###
+### $ docker-compose rm -f
+###
+HOST_PATH_PGSQL_DATADIR=./data/pgsql
+
+
+###
+### Local filesystem path to mongodb datadir.
+###
+### This can be an existing mongodb data directory or empty.
+### If it already is a mongodb data directory with content,
+### it will be mounted into the docker and used.
+###
+### If this directory is empty, a new mongodb database will be
+### created.
+###
+### Note: When changing this variable you must re-create the container.
+###       Simply remove it, it will be auto-created during the next start:
+###
+### $ docker-compose rm -f
+###
+HOST_PATH_MONGO_DATADIR=./data/mongo
+
+
+
+################################################################################
+###
+### 3. PHP Docker Settings
+###
+################################################################################
+
+###
+### Xdebug
+###
+
+# Enable/Disable Xdebug
+PHP_XDEBUG_ENABLE=1
+
+# Your local port (your computer host [not the docker])
+# where your ide/editor is listening for xdebug connections.
+PHP_XDEBUG_REMOTE_PORT=9000
+
+# Your local IP address (your computer host [not the docker])
+# where your ide/editor is listening for xdebug connections.
+PHP_XDEBUG_REMOTE_HOST=192.168.0.215
+## TODO: Check if it works by automatically sending it to the broadcast address
+
+
+
+################################################################################
+###
+### 4. HTTPD Docker Settings
+###
+################################################################################
+
+###
+### Expose HTTPD Port to Host
+###
+HOST_PORT_HTTPD=80
+
+
+
+################################################################################
+###
+### 5. MySQL Docker Settings
+###
+################################################################################
+
+###
+### MySQL root user password
+###
+### If $HOST_PATH_TO_MYSQL_DATADIR already contains an existing
+### mysql datadir, enter the password for the existing mysql database
+###
+### If $HOST_PATH_TO_MYSQL_DATADIR is empty, choose a new password that
+### will be applied
+###
+MYSQL_ROOT_PASSWORD=
+
+###
+### Custom MySQL Runtime Settings
+###
+MYSQL_GENERAL_LOG=1
+
+###
+### Expose MySQL Port to Host
+###
+HOST_PORT_MYSQL=3306
+
+
+
+################################################################################
+###
+### 6. PostgreSQL Docker Settings
+###
+################################################################################
+
+###
+### PostgreSQL 'root' user name (usually postgres)
+###
+PGSQL_ROOT_USER=postgres
+
+###
+### PostgreSQL 'root' user password
+###
+PGSQL_ROOT_PASSWORD=
+
+###
+### Expose PostgreSQL Port to Host
+###
+HOST_PORT_PGSQL=5432
+
+
+
+################################################################################
+###
+### 7. Redis Docker Settings
+###
+################################################################################
+
+###
+### Expose Redis Port to Host
+###
+HOST_PORT_REDIS=6379
+
+
+
+################################################################################
+###
+### 8. Memcached Docker Settings
+###
+################################################################################
+
+###
+### Expose Memcached Port to Host
+###
+HOST_PORT_MEMCD=11211
+
+
+
+################################################################################
+###
+### 9. MongoDB Docker Settings
+###
+################################################################################
+
+###
+### Expose MongoDB Port to Host
+###
+HOST_PORT_MONGO=27017
+
+
+
+################################################################################
+###
+### 10. Bind Docker Settings
+###
+################################################################################
+
+###
+### Expose Bind Port to Host
+###
+HOST_PORT_BIND=1053
+
+###
+### Add comma separated DNS server from which you want to receive DNS
+### You can also add DNS servers from your LAN (if any are available)
+###
+BIND_DNS_RESOLVER=8.8.8.8,8.8.4.4

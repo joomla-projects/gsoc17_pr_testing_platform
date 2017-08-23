@@ -1,0 +1,953 @@
+##
+## -------------------------------
+## |  PR Testing Platform Stack  |
+## -------------------------------
+##
+## Modified LAMP stack based on Devilbox
+##
+##
+## ${VARIABLE:-default} will evaluate to default if VARIABLE is unset or empty in the environment.
+## ${VARIABLE-default}  will evaluate to default only if VARIABLE is unset in the environment.
+##
+##
+## Edit '.env' for configuration.
+##
+## If '.env' does not exist, copy 'env-example' to '.env'
+##   $ cp env-example .env
+##
+
+
+version: '2.1'
+
+
+################################################################################
+# SERVICES
+################################################################################
+services:
+
+  # ----------------------------------------
+  # Bind (DNS Server)
+  # ----------------------------------------
+  bind:
+    image: cytopia/bind:latest
+
+    container_name: bind
+
+    restart: always
+
+    ports:
+      # [local-machine:]local-port:docker-port
+      - "${LOCAL_LISTEN_ADDR}${HOST_PORT_BIND:-1053}:53"
+      - "${LOCAL_LISTEN_ADDR}${HOST_PORT_BIND:-1053}:53/udp"
+
+    environment:
+      ##
+      ## Debug?
+      ##
+      - DEBUG_COMPOSE_ENTRYPOINT
+
+      ##
+      ## Bind settings
+      ##
+      - WILDCARD_DOMAIN=${TLD_SUFFIX:-loc}
+      - WILDCARD_ADDRESS=172.16.238.11
+      - BIND_DNS_RESOLVER=${BIND_DNS_RESOLVER:-8.8.8.8,8.8.4.4}
+
+    dns:
+      - 127.0.0.1
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.100
+
+
+  # ----------------------------------------
+  # PHP-FPM 5.6
+  # ----------------------------------------
+  php56:
+    image: cytopia/php-fpm-5.6:latest
+
+    container_name: php56
+
+    restart: always
+
+    environment:
+
+      ##
+      ## Debug?
+      ##
+      - DEBUG_COMPOSE_ENTRYPOINT
+
+      ##
+      ## UserID and GroupID
+      ##
+      - NEW_UID
+      - NEW_GID
+
+      ##
+      ## Adjust timezone
+      ##
+      - TIMEZONE
+
+      ##
+      ## TLD SUffix
+      ##
+      - TLD_SUFFIX=${TLD_SUFFIX:-loc}
+      - DNS_CHECK_TIMEOUT=${DNS_CHECK_TIMEOUT:-1}
+
+      ##
+      ## PHP Xdebug
+      ##
+      - PHP_XDEBUG_ENABLE
+      - PHP_XDEBUG_REMOTE_PORT
+      - PHP_XDEBUG_REMOTE_HOST
+
+      ##
+      ## Mail-catching
+      ##
+      - ENABLE_MAIL=1
+
+      ##
+      ## Enable 127.0.0.1 Port-forwarding
+      ##
+      - FORWARD_PORTS_TO_LOCALHOST=3306:mysql:3306,5432:pgsql:5432,11211:memcd:11211
+
+      ##
+      ## MySQL Backups
+      ##
+      - MYSQL_BACKUP_USER=root
+      - MYSQL_BACKUP_PASS=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_BACKUP_HOST=mysql
+
+      ##
+      ## Additional variables to announce to intranet/php-container
+      ##
+      # Ports
+      - LOCAL_LISTEN_ADDR
+      - HOST_PORT_BIND
+      - HOST_PORT_HTTPD56
+      - HOST_PORT_MYSQL
+      - HOST_PORT_PGSQL
+      - HOST_PORT_MEMCD
+      # Data dir paths
+      - HOST_PATH_HTTPD_DATADIR
+      - HOST_PATH_MYSQL_DATADIR
+      - HOST_PATH_PGSQL_DATADIR
+      # Database credentials
+      - PGSQL_ROOT_USER
+      - PGSQL_ROOT_PASSWORD
+      - MYSQL_ROOT_PASSWORD
+      # Selected Server versions
+      - HTTPD_SERVER
+      - PGSQL_SERVER
+      - MYSQL_SERVER
+      - MEMCD_SERVER
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.56
+
+    dns:
+      - 172.16.238.100
+      - 8.8.8.8
+      - 8.8.4.4
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Mount custom intranet
+      # (configured in /etc/${HTTPD_SERVER}/01-vhost-default.conf)
+      - ${DEVILBOX_PATH}/.devilbox/www:/var/www/default:ro
+
+      # Mount logs
+      - ${DEVILBOX_PATH}/log/php-fpm-5.6:/var/log/php
+
+      # Mount Mail directory
+      #- ${DEVILBOX_PATH}/run/mail:/var/mail
+
+      # Mount DB Backup directory
+      - ${DEVILBOX_PATH}/backups:/shared/backups
+
+      # Mount devilbox user-defined *.ini files in order
+      # to overwrite the default PHP configuration
+      - ${DEVILBOX_PATH}/cfg/php-fpm-5.6:/etc/php-custom.d:ro
+
+      # Mount custom mass virtual hosting
+      # (configured in /etc/${HTTPD_SERVER}/02-vhost-mass.conf)
+      - ${HOST_PATH_HTTPD_DATADIR}/php56:/shared/httpd
+
+      # Mount jenkins workspace folder
+      - ${DEVILBOX_PATH}/data/jenkins/workspace:/var/jenkins/workspace:ro
+
+      # Files to add/remove Joomla! instances
+      - ${DEVILBOX_PATH}/files:/shared/files:ro
+
+    depends_on:
+      - bind
+
+  # ----------------------------------------
+  # PHP-FPM 7.0
+  # ----------------------------------------
+  php70:
+    image: cytopia/php-fpm-7.0:latest
+
+    container_name: php70
+
+    restart: always
+
+    environment:
+
+      ##
+      ## Debug?
+      ##
+      - DEBUG_COMPOSE_ENTRYPOINT
+
+      ##
+      ## UserID and GroupID
+      ##
+      - NEW_UID
+      - NEW_GID
+
+      ##
+      ## Adjust timezone
+      ##
+      - TIMEZONE
+
+      ##
+      ## TLD SUffix
+      ##
+      - TLD_SUFFIX=${TLD_SUFFIX:-loc}
+      - DNS_CHECK_TIMEOUT=${DNS_CHECK_TIMEOUT:-1}
+
+      ##
+      ## PHP Xdebug
+      ##
+      - PHP_XDEBUG_ENABLE
+      - PHP_XDEBUG_REMOTE_PORT
+      - PHP_XDEBUG_REMOTE_HOST
+
+      ##
+      ## Mail-catching
+      ##
+      - ENABLE_MAIL=1
+
+      ##
+      ## Enable 127.0.0.1 Port-forwarding
+      ##
+      - FORWARD_PORTS_TO_LOCALHOST=3306:mysql:3306,5432:pgsql:5432,11211:memcd:11211
+
+      ##
+      ## MySQL Backups
+      ##
+      - MYSQL_BACKUP_USER=root
+      - MYSQL_BACKUP_PASS=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_BACKUP_HOST=mysql
+
+      ##
+      ## Additional variables to announce to intranet/php-container
+      ##
+      # Ports
+      - LOCAL_LISTEN_ADDR
+      - HOST_PORT_BIND
+      - HOST_PORT_HTTPD70
+      - HOST_PORT_MYSQL
+      - HOST_PORT_PGSQL
+      - HOST_PORT_MEMCD
+      # Data dir paths
+      - HOST_PATH_HTTPD_DATADIR
+      - HOST_PATH_MYSQL_DATADIR
+      - HOST_PATH_PGSQL_DATADIR
+      # Database credentials
+      - PGSQL_ROOT_USER
+      - PGSQL_ROOT_PASSWORD
+      - MYSQL_ROOT_PASSWORD
+      # Selected Server versions
+      - HTTPD_SERVER
+      - PGSQL_SERVER
+      - MYSQL_SERVER
+      - MEMCD_SERVER
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.70
+
+    dns:
+      - 172.16.238.100
+      - 8.8.8.8
+      - 8.8.4.4
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Mount custom intranet
+      # (configured in /etc/${HTTPD_SERVER}/01-vhost-default.conf)
+      - ${DEVILBOX_PATH}/.devilbox/www:/var/www/default:ro
+
+      # Mount logs
+      - ${DEVILBOX_PATH}/log/php-fpm-7.0:/var/log/php
+
+      # Mount Mail directory
+      #- ${DEVILBOX_PATH}/run/mail:/var/mail
+
+      # Mount DB Backup directory
+      - ${DEVILBOX_PATH}/backups:/shared/backups
+
+      # Mount devilbox user-defined *.ini files in order
+      # to overwrite the default PHP configuration
+      - ${DEVILBOX_PATH}/cfg/php-fpm-7.0:/etc/php-custom.d:ro
+
+      # Mount custom mass virtual hosting
+      # (configured in /etc/${HTTPD_SERVER}/02-vhost-mass.conf)
+      - ${HOST_PATH_HTTPD_DATADIR}/php70:/shared/httpd
+
+      # Mount jenkins workspace folder
+      - ${DEVILBOX_PATH}/data/jenkins/workspace:/var/jenkins/workspace:ro
+
+      # Files to add/remove Joomla! instances
+      - ${DEVILBOX_PATH}/files:/shared/files:ro
+
+    depends_on:
+      - bind
+
+  # ----------------------------------------
+  # PHP-FPM 7.1
+  # ----------------------------------------
+  php71:
+    image: cytopia/php-fpm-7.1:latest
+
+    container_name: php71
+
+    restart: always
+
+    environment:
+
+      ##
+      ## Debug?
+      ##
+      - DEBUG_COMPOSE_ENTRYPOINT
+
+      ##
+      ## UserID and GroupID
+      ##
+      - NEW_UID
+      - NEW_GID
+
+      ##
+      ## Adjust timezone
+      ##
+      - TIMEZONE
+
+      ##
+      ## TLD SUffix
+      ##
+      - TLD_SUFFIX=${TLD_SUFFIX:-loc}
+      - DNS_CHECK_TIMEOUT=${DNS_CHECK_TIMEOUT:-1}
+
+      ##
+      ## PHP Xdebug
+      ##
+      - PHP_XDEBUG_ENABLE
+      - PHP_XDEBUG_REMOTE_PORT
+      - PHP_XDEBUG_REMOTE_HOST
+
+      ##
+      ## Mail-catching
+      ##
+      - ENABLE_MAIL=1
+
+      ##
+      ## Enable 127.0.0.1 Port-forwarding
+      ##
+      - FORWARD_PORTS_TO_LOCALHOST=3306:mysql:3306,5432:pgsql:5432,11211:memcd:11211
+
+      ##
+      ## MySQL Backups
+      ##
+      - MYSQL_BACKUP_USER=root
+      - MYSQL_BACKUP_PASS=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_BACKUP_HOST=mysql
+
+      ##
+      ## Additional variables to announce to intranet/php-container
+      ##
+      # Ports
+      - LOCAL_LISTEN_ADDR
+      - HOST_PORT_BIND
+      - HOST_PORT_HTTPD71
+      - HOST_PORT_MYSQL
+      - HOST_PORT_PGSQL
+      - HOST_PORT_MEMCD
+      # Data dir paths
+      - HOST_PATH_HTTPD_DATADIR
+      - HOST_PATH_MYSQL_DATADIR
+      - HOST_PATH_PGSQL_DATADIR
+      # Database credentials
+      - PGSQL_ROOT_USER
+      - PGSQL_ROOT_PASSWORD
+      - MYSQL_ROOT_PASSWORD
+      # Selected Server versions
+      - HTTPD_SERVER
+      - PGSQL_SERVER
+      - MYSQL_SERVER
+      - MEMCD_SERVER
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.71
+
+    dns:
+      - 172.16.238.100
+      - 8.8.8.8
+      - 8.8.4.4
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Mount custom intranet
+      # (configured in /etc/${HTTPD_SERVER}/01-vhost-default.conf)
+      - ${DEVILBOX_PATH}/.devilbox/www:/var/www/default:ro
+
+      # Mount logs
+      - ${DEVILBOX_PATH}/log/php-fpm-7.1:/var/log/php
+
+      # Mount Mail directory
+      #- ${DEVILBOX_PATH}/run/mail:/var/mail
+
+      # Mount DB Backup directory
+      - ${DEVILBOX_PATH}/backups:/shared/backups
+
+      # Mount devilbox user-defined *.ini files in order
+      # to overwrite the default PHP configuration
+      - ${DEVILBOX_PATH}/cfg/php-fpm-7.1:/etc/php-custom.d:ro
+
+      # Mount custom mass virtual hosting
+      # (configured in /etc/${HTTPD_SERVER}/02-vhost-mass.conf)
+      - ${HOST_PATH_HTTPD_DATADIR}/php71:/shared/httpd
+
+      # Mount jenkins workspace folder
+      - ${DEVILBOX_PATH}/data/jenkins/workspace:/var/jenkins/workspace:ro
+
+      # Files to add/remove Joomla! instances
+      - ${DEVILBOX_PATH}/files:/shared/files:ro
+
+      # Mount docker socket and executable in order to add/remove joomla instances
+      # from inside the container
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/bin/docker:/usr/bin/docker:ro
+
+    depends_on:
+      - bind
+
+  # ----------------------------------------
+  # Jenkins service
+  # ----------------------------------------
+  jenkins:
+    image: jenkins:latest
+
+    container_name: jenkins
+
+    restart: always
+
+    environment:
+      - VIRTUAL_HOST=jenkins.dbox-tests.ml
+      - VIRTUAL_PORT=8080
+      - LETSENCRYPT_HOST=jenkins.dbox-tests.ml
+      - LETSENCRYPT_EMAIL=email@example.com
+
+    volumes:
+      - ${DEVILBOX_PATH}/data/jenkins:/var/jenkins_home
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.20
+
+    depends_on:
+      - httpd
+
+  # ------------------------------------------------------
+  # HTTPD (proxy for the several php versions and jenkins)
+  # ------------------------------------------------------
+  httpd:
+    image: 'jwilder/nginx-proxy:latest'
+
+    container_name: httpd
+
+    restart: always
+
+    ports:
+      # ---- Format: ----
+      # [HOST-ADDR : ] HOST-PORT : DOCKER-PORT
+      - '80:80'
+      - '443:443'
+
+    volumes:
+      - ${DEVILBOX_PATH}/.devilbox/etc/jwilder-nginx-proxy/conf.d:/etc/nginx/conf.d
+      - ${DEVILBOX_PATH}/.devilbox/etc/jwilder-nginx-proxy/vhost.d:/etc/nginx/vhost.d
+      - ${DEVILBOX_PATH}/.devilbox/etc/jwilder-nginx-proxy/certs:/etc/nginx/certs:ro
+      - ${DEVILBOX_PATH}/.devilbox/etc/jwilder-nginx-proxy/html:/usr/share/nginx/html
+      - '/var/run/docker.sock:/tmp/docker.sock:ro'
+
+      # Mount logs
+      - ${DEVILBOX_PATH}/log/jwilder-nginx-proxy:/var/log/nginx
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.11
+
+  # ----------------------------------------
+  # Companion container for creation/renewal
+  # of Let's Encrypt certificates
+  # ----------------------------------------
+  companion:
+    image: 'jrcs/letsencrypt-nginx-proxy-companion:latest'
+
+    container_name: companion
+
+    restart: always
+
+    volumes:
+      - ${DEVILBOX_PATH}/.devilbox/etc/jwilder-nginx-proxy/certs:/etc/nginx/certs
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+
+    volumes_from:
+      - httpd
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.111
+
+  # ----------------------------------------
+  # HTTPD for PHP 5.6
+  # ----------------------------------------
+  httpd56:
+    image: cytopia/${HTTPD_SERVER:-nginx-stable}:latest
+
+    container_name: httpd56
+
+    restart: always
+
+    expose:
+      - ${HOST_PORT_HTTPD56}
+
+#    ports:
+      # ---- Format: ----
+      # [HOST-ADDR : ] HOST-PORT : DOCKER-PORT
+#      - "${LOCAL_LISTEN_ADDR}${HOST_PORT_HTTPD56}:80"
+
+
+    environment:
+
+      - VIRTUAL_HOST=~^56.*\.dbox-tests\.ml$$
+
+      ##
+      ## Debug?
+      ##
+      - DEBUG_COMPOSE_ENTRYPOINT
+
+      ##
+      ## Adjust timezone
+      ##
+      - TIMEZONE
+
+      ##
+      ## PHP-FPM Remote Server
+      ##
+      - PHP_FPM_ENABLE=1
+      - PHP_FPM_SERVER_ADDR=php56
+      - PHP_FPM_SERVER_PORT=9000
+
+      ## Tell the webserver to look into this directory
+      ## for additional configuration files.
+      ##
+      ## @see volumes:: - ./etc/${HTTPD_SERVER}:/etc/${HTTPD_SERVER}
+      - CUSTOM_HTTPD_CONF_DIR=/etc/${HTTPD_SERVER}
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.156
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Custom scripts/binaries required for httpd server vhost
+      # configuration to work.
+      # (configured in /etc/${HTTPD_SERVER}/02-vhost-mass.conf)
+      - ${DEVILBOX_PATH}/.devilbox/bin/${HTTPD_SERVER}:/opt/bin:ro
+
+      # Mount user-defined httpd configuration files
+      # @see environment::CUSTOM_HTTPD_CONF_DIR for how this
+      # is added in httpd server
+      - ${DEVILBOX_PATH}/.devilbox/etc/${HTTPD_SERVER}/php56:/etc/${HTTPD_SERVER}:ro
+
+      # Mount custom intranet
+      # (configured in /etc/${HTTPD_SERVER}/01-vhost-default.conf)
+      - ${DEVILBOX_PATH}/.devilbox/www:/var/www/default:ro
+
+      # Mount user-defined httpd log
+      # @see ./etc/${HTTPD_SERVER}/*.conf for log defines
+      - ${DEVILBOX_PATH}/log/${HTTPD_SERVER}/php56:/var/log/${HTTPD_SERVER}
+
+      # Mount custom mass virtual hosting
+      # (configured in /etc/${HTTPD_SERVER}/02-vhost-mass.conf)
+      - ${HOST_PATH_HTTPD_DATADIR}/php56:/shared/httpd:ro
+
+    depends_on:
+      - bind
+      - httpd
+      - php56
+
+  # ----------------------------------------
+  # HTTPD for PHP 7.0
+  # ----------------------------------------
+  httpd70:
+    image: cytopia/${HTTPD_SERVER:-nginx-stable}:latest
+
+    container_name: httpd70
+
+    restart: always
+
+    expose:
+      - ${HOST_PORT_HTTPD70}
+
+#    ports:
+      # ---- Format: ----
+      # [HOST-ADDR : ] HOST-PORT : DOCKER-PORT
+#      - "${LOCAL_LISTEN_ADDR}${HOST_PORT_HTTPD70}:80"
+
+    environment:
+
+      - VIRTUAL_HOST=~^70.*\.dbox-tests\.ml$$
+
+      ##
+      ## Debug?
+      ##
+      - DEBUG_COMPOSE_ENTRYPOINT
+
+      ##
+      ## Adjust timezone
+      ##
+      - TIMEZONE
+
+      ##
+      ## PHP-FPM Remote Server
+      ##
+      - PHP_FPM_ENABLE=1
+      - PHP_FPM_SERVER_ADDR=php70
+      - PHP_FPM_SERVER_PORT=9000
+
+      ## Tell the webserver to look into this directory
+      ## for additional configuration files.
+      ##
+      ## @see volumes:: - ./etc/${HTTPD_SERVER}:/etc/${HTTPD_SERVER}
+      - CUSTOM_HTTPD_CONF_DIR=/etc/${HTTPD_SERVER}
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.170
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Custom scripts/binaries required for httpd server vhost
+      # configuration to work.
+      # (configured in /etc/${HTTPD_SERVER}/02-vhost-mass.conf)
+      - ${DEVILBOX_PATH}/.devilbox/bin/${HTTPD_SERVER}:/opt/bin:ro
+
+      # Mount user-defined httpd configuration files
+      # @see environment::CUSTOM_HTTPD_CONF_DIR for how this
+      # is added in httpd server
+      - ${DEVILBOX_PATH}/.devilbox/etc/${HTTPD_SERVER}/php70:/etc/${HTTPD_SERVER}:ro
+
+      # Mount custom intranet
+      # (configured in /etc/${HTTPD_SERVER}/01-vhost-default.conf)
+      - ${DEVILBOX_PATH}/.devilbox/www:/var/www/default:ro
+
+      # Mount user-defined httpd log
+      # @see ./etc/${HTTPD_SERVER}/*.conf for log defines
+      - ${DEVILBOX_PATH}/log/${HTTPD_SERVER}/php70:/var/log/${HTTPD_SERVER}
+
+      # Mount custom mass virtual hosting
+      # (configured in /etc/${HTTPD_SERVER}/02-vhost-mass.conf)
+      - ${HOST_PATH_HTTPD_DATADIR}/php70:/shared/httpd:ro
+
+    depends_on:
+      - bind
+      - httpd
+      - php70
+
+  # ----------------------------------------
+  # HTTPD for PHP 7.1
+  # ----------------------------------------
+  httpd71:
+    image: cytopia/${HTTPD_SERVER:-nginx-stable}:latest
+
+    container_name: httpd71
+
+    restart: always
+
+    expose:
+      - ${HOST_PORT_HTTPD71}
+
+#    ports:
+      # ---- Format: ----
+      # [HOST-ADDR : ] HOST-PORT : DOCKER-PORT
+#      - "${LOCAL_LISTEN_ADDR}${HOST_PORT_HTTPD71}:80"
+
+    environment:
+
+      - VIRTUAL_HOST=~^(www\.)*dbox-tests\.ml$$,~^71.*\.dbox-tests\.ml$$
+      - LETSENCRYPT_HOST=www.dbox-tests.ml,dbox-tests.ml
+      - LETSENCRYPT_EMAIL=email@example.com
+
+      ##
+      ## Debug?
+      ##
+      - DEBUG_COMPOSE_ENTRYPOINT
+
+      ##
+      ## Adjust timezone
+      ##
+      - TIMEZONE
+
+      ##
+      ## PHP-FPM Remote Server
+      ##
+      - PHP_FPM_ENABLE=1
+      - PHP_FPM_SERVER_ADDR=php71
+      - PHP_FPM_SERVER_PORT=9000
+
+      ## Tell the webserver to look into this directory
+      ## for additional configuration files.
+      ##
+      ## @see volumes:: - ./etc/${HTTPD_SERVER}:/etc/${HTTPD_SERVER}
+      - CUSTOM_HTTPD_CONF_DIR=/etc/${HTTPD_SERVER}
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.171
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Custom scripts/binaries required for httpd server vhost
+      # configuration to work.
+      # (configured in /etc/${HTTPD_SERVER}/02-vhost-mass.conf)
+      - ${DEVILBOX_PATH}/.devilbox/bin/${HTTPD_SERVER}:/opt/bin:ro
+
+      # Mount user-defined httpd configuration files
+      # @see environment::CUSTOM_HTTPD_CONF_DIR for how this
+      # is added in httpd server
+      - ${DEVILBOX_PATH}/.devilbox/etc/${HTTPD_SERVER}/php71:/etc/${HTTPD_SERVER}:ro
+
+      # Mount custom intranet
+      # (configured in /etc/${HTTPD_SERVER}/01-vhost-default.conf)
+      - ${DEVILBOX_PATH}/.devilbox/www:/var/www/default:ro
+
+      # Mount user-defined httpd log
+      # @see ./etc/${HTTPD_SERVER}/*.conf for log defines
+      - ${DEVILBOX_PATH}/log/${HTTPD_SERVER}/php71:/var/log/${HTTPD_SERVER}
+
+      # Mount custom mass virtual hosting
+      # (configured in /etc/${HTTPD_SERVER}/02-vhost-mass.conf)
+      - ${HOST_PATH_HTTPD_DATADIR}/php71:/shared/httpd:ro
+
+    depends_on:
+      - bind
+      - httpd
+      - php71
+
+  # ----------------------------------------
+  # DATABASE
+  # ----------------------------------------
+  mysql:
+    image: cytopia/${MYSQL_SERVER:-mysql-5.6}:latest
+
+    container_name: mysql
+
+    environment:
+
+      ##
+      ## Debug?
+      ##
+      - DEBUG_COMPOSE_ENTRYPOINT
+
+      ##
+      ## Adjust timezone
+      ##
+      - TIMEZONE
+
+      ##
+      ## Adjust Root password
+      ##
+      - MYSQL_ROOT_PASSWORD
+
+      ##
+      ## Socket directory Path
+      ##
+      - MYSQL_SOCKET_DIR=/tmp/mysql
+
+      ##
+      ## Runtime settings
+      ##
+      - MYSQL_GENERAL_LOG=${MYSQL_GENERAL_LOG}
+
+    ports:
+      # [local-machine:]local-port:docker-port
+      - "${LOCAL_LISTEN_ADDR}${HOST_PORT_MYSQL}:3306"
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.12
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Mount logs
+      - ${DEVILBOX_PATH}/log/${MYSQL_SERVER}:/var/log/mysql
+
+      # Mount devilbox default overwrites
+      - ${DEVILBOX_PATH}/.devilbox/etc/${MYSQL_SERVER}:/etc/mysql/conf.d:ro
+
+      # Mount devilbox user-defined cnf files in order
+      # to overwrite the MySQL server configuration
+      - ${DEVILBOX_PATH}/cfg/${MYSQL_SERVER}:/etc/mysql/docker-default.d:ro
+
+      # Mount MySQL Data directory
+      - ${HOST_PATH_MYSQL_DATADIR}/${MYSQL_SERVER}:/var/lib/mysql
+
+    depends_on:
+      - bind
+      - php56
+      - php70
+      - php71
+      - httpd56
+      - httpd70
+      - httpd71
+
+
+  # ----------------------------------------
+  # POSTGRESQL
+  # ----------------------------------------
+  pgsql:
+    image: postgres:${PGSQL_SERVER:-9.6}
+
+    container_name: pgsql
+
+    environment:
+
+      - POSTGRES_USER=${PGSQL_ROOT_USER}
+      - POSTGRES_PASSWORD=${PGSQL_ROOT_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+    ports:
+      # [local-machine:]local-port:docker-port
+      - "${LOCAL_LISTEN_ADDR}${HOST_PORT_PGSQL}:5432"
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.13
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Mount logs
+      - ${DEVILBOX_PATH}/log/pgsql-${PGSQL_SERVER}:/var/log/postgresql
+
+      # Mount PostgreSQL Data directory
+      - ${HOST_PATH_PGSQL_DATADIR}/${PGSQL_SERVER}:/var/lib/postgresql/data/pgdata
+
+    depends_on:
+      - bind
+      - php56
+      - php70
+      - php71
+      - httpd56
+      - httpd70
+      - httpd71
+
+  # ----------------------------------------
+  # Redis
+  # ----------------------------------------
+  redis:
+    image: redis:${REDIS_SERVER:-3.2}
+
+    container_name: redis
+
+    ports:
+      # [local-machine:]local-port:docker-port
+      - "${LOCAL_LISTEN_ADDR}${HOST_PORT_REDIS}:6379"
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.14
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Mount logs
+      - ${DEVILBOX_PATH}/log/redis-${REDIS_SERVER}:/var/log/redis
+
+    depends_on:
+      - bind
+      - php56
+      - php70
+      - php71
+      - httpd56
+      - httpd70
+      - httpd71
+
+  # ----------------------------------------
+  # Memcached
+  # ----------------------------------------
+  memcd:
+    image: memcached:${MEMCD_SERVER:-latest}
+
+    container_name: memcd
+
+    ports:
+      # [local-machine:]local-port:docker-port
+      - "${LOCAL_LISTEN_ADDR}${HOST_PORT_MEMCD}:11211"
+
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.15
+
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Mount logs
+      - ${DEVILBOX_PATH}/log/memcd-${MEMCD_SERVER}:/var/log/memcd
+
+    depends_on:
+      - bind
+      - php56
+      - php70
+      - php71
+      - httpd56
+      - httpd70
+      - httpd71
+
+
+################################################################################
+# NETWORK
+################################################################################
+networks:
+  app_net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24
+          gateway: 172.16.238.1

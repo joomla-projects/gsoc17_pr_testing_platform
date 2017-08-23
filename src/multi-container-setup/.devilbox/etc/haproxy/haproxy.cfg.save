@@ -1,0 +1,65 @@
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+        log 127.0.0.1   local0
+        log 127.0.0.1   local1 notice
+	debug
+	stats timeout 30s
+        maxconn 4096
+        daemon
+
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+        option forwardfor
+        option http-server-close
+	timeout connect 5000
+	timeout client  50000
+	timeout server  50000
+
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend main
+        bind *:80
+	timeout client 2m
+        
+	# Define hosts
+        acl host_dbox-tests hdr(host) -i dbox-tests.ml
+        acl host_12345 hdr(host) -i 12345.dbox-tests.ml
+
+        ## figure out which one to use
+        use_backend dbox-tests if host_dbox-tests
+        use_backend 12345 if host_12345
+
+
+#---------------------------------------------------------------------
+# backend for each subdomain and the main domain
+#---------------------------------------------------------------------
+backend dbox-tests
+	mode http
+	timeout connect 9s
+	timeout server 1m
+	http-request set-header X-Forwarded-Port %[dst_port]
+	http-request add-header X-Forwarded-Proto https if { ssl_fc }
+	option httpchk HEAD / HTTP/1.1\r\nHost:localhost
+        server httpd 172.16.238.171:8071 check
+
+
+backend 12345
+	mode http
+	timeout connect 9s
+	timeout server 1m
+	http-request set-header X-Forwarded-Port %[dst_port]
+	http-request add-header X-Forwarded-Proto https if { ssl_fc }
+	option httpchk HEAD / HTTP/1.1\r\nHost:localhost
+        server httpd_12345 172.16.238.170:8070 check
