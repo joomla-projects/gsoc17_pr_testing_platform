@@ -7,7 +7,9 @@
 
 # Ignore variable dat
 /src/log/[a-z0-9-]*
-/src/data/*
+/src/data/www/php56
+/src/data/www/php70
+/src/data/www/php71/*
 !/src/data/www/php71/dbox-tests/
 
 /src/backups/

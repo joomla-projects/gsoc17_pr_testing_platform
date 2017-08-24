@@ -1,0 +1,73 @@
+{# Copyright (C) 2017 Open Source Matters, Inc. All rights reserved. #}
+{# GNU General Public License version 2 or later; see LICENSE.txt #}
+
+{% extends "index.twig" %}
+
+{% block title %}{{ parent() }} | {{ "Articles"|_ }}{% endblock %}
+
+{% block headerText %} - {{ "Articles"|_ }}{% endblock %}
+
+{% block headerCSS %}
+    {{ parent() }}
+
+    {# If in debug mode, load each file individually, otherwise use the combined source loaded by the template #}
+    {% if templateDebug %}
+    {% endif %}
+
+    <link rel="stylesheet" href="{{ asset('css/pagination/pagination.css', 'debug') }}" />
+    <link rel="stylesheet" href="{{ asset('css/pagination/B_black.css', 'debug') }}" />
+{% endblock %}
+
+{% block prependMenu %}
+    {% if user.check("create") %}
+        <li>
+            <a class="btn-success" href="{{ uri.base.path }}text/add">
+                {{ "New Article"|_ }}
+            </a>
+        </li>
+    {% endif %}
+
+    {{ parent() }}
+
+{% endblock %}
+
+{% block content %}
+
+    <h2>{{ "Articles List"|_ }}</h2>
+
+    <table class="table table-bordered table-hover table-condensed">
+        <thead>
+        <tr>
+            <th>{{ "Title/Alias"|_ }}</th>
+            <th style="width: 10%">{{ "Actions"|_ }}</th>
+        </tr>
+        </thead>
+        <tfoot>
+
+        </tfoot>
+        <tbody>
+        {% for a in items %}
+            <tr>
+                <td>
+                    <a href="{{ uri.base.path }}text/edit/{{ a.article_id }}">
+                        {{ a.title ? : '---' }} / {{ a.alias }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ uri.base.path }}page/{{ a.alias }}">
+                        {{ "View"|_ }}
+                    </a>
+                    <a href="{{ uri.base.path }}text/delete/{{ a.article_id }}">
+                        {{ "Delete"|_ }}
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3"><div class="alert alert-warning">{{ "No articles found"|_ }}</div></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

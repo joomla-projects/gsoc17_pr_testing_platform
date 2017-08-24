@@ -1,0 +1,203 @@
+{# Copyright (C) 2017 Open Source Matters, Inc. All rights reserved. #}
+{# GNU General Public License version 2 or later; see LICENSE.txt #}
+
+{% extends "index.twig" %}
+
+{% block title %}{{ '%s - Labels'|_|format(project.title) }}{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <h1>{{ '%s - Labels'|_|format(project.title) }}</h1>
+    </div>
+
+    <div class="btn" onclick="listLabels('{{ project.alias }}');">{{ 'List Labels'|_ }}</div>
+
+    <div id="listLabels"></div>
+    <div id="ajaxDebug" class="alert-error"></div>
+
+    <h2>{{ 'New Label'|_ }}</h2>
+
+    <form name="newLabel" class="form-inline">
+        <div class="row-fluid well well-small">
+            <div class="span5">
+                <label for="name">{{ 'Name'|_ }}</label><br/>
+                <input type="text" id="name" name="name" placeholder="{{ 'Label name'|_ }}"/>
+            </div>
+            <div class="span5">
+                <label for="color_display">{{ 'Colour'|_ }}</label>
+                <input class="color_select" id="color" value="#{{ item.color }}"/>
+                <input type="text" name="color" id="color_display" placeholder="{{ 'Label colour'|_ }}"/>
+            </div>
+            <div class="span2 left">
+                <div class="btn btn-large btn-success" onclick="addLabel('{{ project.alias }}');">{{ 'Add Label'|_ }}</div>
+            </div>
+        </div>
+    </form>
+
+    <!-- ++++++++++++++++++++++++++ -->
+    <!-- +  JavaScript templates  + -->
+    <!-- ++++++++++++++++++++++++++ -->
+
+    <script type="text/x-tmpl" id="tplLabels">
+        <table class="table table-hover table-condensed">
+            <thead>
+            <tr>
+                <th>{{ 'URL'|_ }}</th>
+                <th>{{ 'Name'|_ }}</th>
+                <th>{{ 'Colour'|_ }}</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            [% for (var i=0; i < o.data.length; i++) { %]
+            <tr>
+                <td>[%= o.data[i].url %]</td>
+                <td>[%= o.data[i].name %]</td>
+                <td style="border: 1px solid silver; color: [% print(getContrastYIQ(o.data[i].color)); %];); background-color: #[%= o.data[i].color %];">[%= o.data[i].color %]</td>
+                <td>
+                    <a href="javascript:"
+                       onclick="deleteLabel('{{ project.alias }}', '[%= o.data[i].name %]');">
+                        {{ 'Delete'|_ }}
+                    </a>
+                </td>
+            </tr>
+            [% } %]
+            </tbody>
+        </table>
+    </script>
+{% endblock %}
+
+{% block JavaScriptBottom %}
+    {{ parent() }}
+
+    {# If in debug mode, load each file individually, otherwise use the combined source loaded by the template #}
+    {% if templateDebug %}
+    <script src="{{ asset('js/vendor/blueimp-tmpl/js/tmpl.js', 'noversion') }}"></script>
+    <script src="{{ asset('js/vendor/jquery-simple-color/src/jquery.simple-color.js', 'noversion') }}"></script>
+    {% endif %}
+
+    <script src="{{ asset('js/jtracker-tmpl.js', 'debug') }}"></script>
+    <script src="{{ asset('js/color-select.js', 'debug') }}"></script>
+
+    <script type="text/javascript">
+
+        /**
+         * List hooks.
+         *
+         * @param alias
+         *
+         * @since __DEPLOY_VERSION__
+         */
+        function listLabels(alias) {
+            var out = $('#listLabels');
+            var debug = $('#ajaxDebug');
+
+            out.html('Requesting...');
+            debug.empty();
+
+            $.get(
+                    '{{ uri.base.path }}project/' + alias + '/labels-list',
+                    {  },
+                    function (response) {
+                        out.empty();
+                        if (response.error) {
+                            debug.html(response.error);
+                        }
+                        else if (!response.data.length) {
+                            out.html('No labels found.');
+                        }
+                        else {
+                            out.html(tmpl("tplLabels", response));
+                        }
+                    }
+            );
+        }
+
+        /**
+         * Add a label.
+         *
+         * @param alias
+         *
+         * @since __DEPLOY_VERSION__
+         */
+        function addLabel(alias) {
+
+            var out = $('#listLabels');
+            var debug = $('#ajaxDebug');
+
+            var name = $('input[name="name"]').val();
+            var color = $('input[name="color"]').val();
+
+            out.html('Requesting...');
+            debug.empty();
+
+            $.get(
+                    '{{ uri.base.path }}project/' + alias + '/labels-add',
+                    { name: name, color: color },
+                    function (response) {
+                        out.empty();
+                        if (response.error) {
+                            debug.html(response.error);
+                        }
+                        else if (!response.data.length) {
+                            out.html('No labels found.');
+                        }
+                        else {
+                            out.html(tmpl("tplLabels", response));
+                        }
+                    }
+            );
+        }
+
+        /**
+         * Modify a hook.
+         *
+         * @param alias
+         *
+         * @since __DEPLOY_VERSION__
+         */
+        function deleteLabel(alias, name) {
+            var out = $('#listLabels');
+            var debug = $('#ajaxDebug');
+
+            out.html('Requesting...');
+            debug.empty();
+
+            $.get(
+                    '{{ uri.base.path }}project/' + alias + '/labels-delete',
+                    { name: name },
+                    function (response) {
+                        out.empty();
+                        if (response.error) {
+                            debug.html(response.error);
+                        }
+                        else if (!response.data.length) {
+                            out.html('No labels found.');
+                        }
+                        else {
+                            out.html(tmpl("tplLabels", response));
+                        }
+                    }
+            );
+        }
+
+        /**
+         * Calculate a contrast color (black or white)
+         *
+         * http://24ways.org/2010/calculating-color-contrast/
+         *
+         * @param hexcolor
+         *
+         * @since __DEPLOY_VERSION__
+         * @returns {string}
+         */
+        function getContrastYIQ(hexcolor){
+            var r = parseInt(hexcolor.substr(0,2),16);
+            var g = parseInt(hexcolor.substr(2,2),16);
+            var b = parseInt(hexcolor.substr(4,2),16);
+            var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? 'black' : 'white';
+        }
+    </script>
+{% endblock %}

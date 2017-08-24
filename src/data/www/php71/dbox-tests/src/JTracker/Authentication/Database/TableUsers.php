@@ -1,0 +1,64 @@
+<?php
+/**
+ * Part of the Joomla Tracker Authentication Package
+ *
+ * @copyright  Copyright (C) 2017 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
+ */
+
+namespace JTracker\Authentication\Database;
+
+use Joomla\Database\DatabaseDriver;
+
+use JTracker\Database\AbstractDatabaseTable;
+
+/**
+ * Table class for interfacing with the #__users table
+ *
+ * @property   integer  $id             PK
+ * @property   string   $name           The users name
+ * @property   string   $username       The users username
+ * @property   string   $email          The users e-mail
+ * @property   integer  $block          If the user is blocked
+ * @property   integer  $sendEmail      If the users receives e-mail
+ * @property   string   $registerDate   The register date
+ * @property   string   $lastvisitDate  The last visit date
+ * @property   string   $params         Parameters
+ *
+ * @since __DEPLOY_VERSION__
+ */
+class TableUsers extends AbstractDatabaseTable
+{
+    /**
+    * Constructor.
+    *
+    * @param   DatabaseDriver  $database  A database connector object.
+    *
+    * @since   __DEPLOY_VERSION__
+    */
+    public function __construct(DatabaseDriver $database)
+	{
+		parent::__construct('#__users', 'id', $database);
+	}
+
+    /**
+    * Load data by a given user name.
+    *
+    * @param   string  $userName  The user name
+    *
+    * @return  $this  Method allows chaining
+    *
+    * @since   __DEPLOY_VERSION__
+    */
+    public function loadByUserName($userName)
+	{
+		$check = $this->db->setQuery(
+			$this->db->getQuery(true)
+				->select('*')
+				->from($this->tableName)
+				->where($this->db->quoteName('username') . ' = ' . $this->db->quote($userName))
+		)->loadObject();
+
+		return ($check) ? $this->bind($check) : $this;
+	}
+}

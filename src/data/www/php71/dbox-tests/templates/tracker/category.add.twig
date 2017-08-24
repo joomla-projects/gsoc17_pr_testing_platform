@@ -1,0 +1,69 @@
+{# Copyright (C) 2017 Open Source Matters, Inc. All rights reserved. #}
+{# GNU General Public License version 2 or later; see LICENSE.txt #}
+
+{% extends "index.twig" %}
+
+{% block title %}{{ parent() }} | {{ "Add Category"|_ }}{% endblock %}
+
+{% block prependMenu %}
+    <li>
+        <a class="btn-success" href="javascript:;" onclick="document.editForm.submit();">
+            {{ "Save"|_ }}
+        </a>
+    </li>
+
+    {{ parent() }}
+
+{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{{ "New Category"|_ }}</h1>
+    </div>
+
+    <form method="post" action="{{ uri.base.path }}category/save" class="form-inline" name="editForm">
+        <fieldset>
+            <legend>{{ "Details"|_ }}</legend>
+
+            <div class="control-group">
+                <label class="control-label" for="title">{{ "Title"|_ }}</label>
+
+                <div class="controls">
+                    <input type="text" name="category[title]" id="title"/>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="alias">{{ "Alias"|_ }}</label>
+
+                <div class="controls">
+                    <input type="text" name="category[alias]" id="alias"/>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="color_display">{{ "Colour"|_ }}</label>
+
+                <div class="controls">
+                    <input class="color_select" id="color"/>
+                    <input type="text" name="category[color]" id="color_display"/>
+                </div>
+            </div>
+
+            <input type="hidden" name="category[project_id]" value="{{ project.project_id }}"/>
+
+        </fieldset>
+    </form>
+
+{% endblock %}
+
+{% block JavaScriptBottom %}
+    {{ parent() }}
+
+    {# If in debug mode, load each file individually, otherwise use the combined source loaded by the template #}
+    {% if templateDebug %}
+    <script src="{{ asset('js/vendor/jquery-simple-color/src/jquery.simple-color.js', 'noversion') }}"></script>
+    {% endif %}
+
+    <script src="{{ asset('js/color-select.js', 'debug') }}"></script>
+{% endblock %}

@@ -1,0 +1,275 @@
+{# Copyright (C) 2017 Open Source Matters, Inc. All rights reserved. #}
+{# GNU General Public License version 2 or later; see LICENSE.txt #}
+
+{% extends "index.twig" %}
+
+{% block title %}{{ parent() }} | {{ "Edit Group"|_ }}{% endblock %}
+
+{% block prependMenu %}
+    <li>
+        <a class="btn-success" href="javascript:" onclick="document.editForm.submit();">
+            {{ "Save"|_ }}
+        </a>
+    </li>
+
+    {{ parent() }}
+
+{% endblock %}
+
+{% block headerCSS %}
+    {{ parent() }}
+
+    {# If in debug mode, load each file individually, otherwise use the combined source loaded by the template #}
+    {% if templateDebug %}
+    <link rel="stylesheet" href="{{ asset('css/vendor/bootstrap-switch/build/css/bootstrap2/bootstrap-switch.css', 'noversion') }}" />
+    {% endif %}
+{% endblock %}
+
+{% block JavaScriptBottom %}
+    {{ parent() }}
+
+    {# If in debug mode, load each file individually, otherwise use the combined source loaded by the template #}
+    {% if templateDebug %}
+    <script src="{{ asset('js/vendor/bootstrap-switch/build/js/bootstrap-switch.js', 'noversion') }}"></script>
+    <script src="{{ asset('js/vendor/bootstrap/js/bootstrap-typeahead.js', 'noversion') }}"></script>
+    {% endif %}
+
+    <script type="text/javascript">
+        jQuery('#searchUser').typeahead({
+            source: function (query, process) {
+                return $.get(
+                    '{{ uri.base.path }}user/search', {query: query, not_in_group_id: {{ group.group_id }}  },
+                    function (response) {
+                        if (response.error) {
+                            $('#ajax-errors').html(response.error);
+
+                            return process([]);
+                        }
+
+                        return process(response.data.options);
+                    }
+                );
+            }
+        });
+
+        jQuery('#searchUserGroup').typeahead({
+            source: function (query, process) {
+                return $.get(
+                    '{{ uri.base.path }}user/search', {query: query, in_group_id: {{ group.group_id }} },
+                    function (response) {
+                        if (response.error) {
+                            $('#ajax-errors').html(response.error);
+
+                            return process([]);
+                        }
+
+                        return process(response.data.options);
+                    }
+                );
+            }
+        });
+
+        function assignUser(user, group_id, project_id, assign, fieldName) {
+            var msg = $('#' + fieldName + '-msg');
+
+            if (!user) {
+                msg.html('<b style="color: orange;">' + 'Please select a user' + '</b>');
+                $('#' + fieldName).focus();
+
+                return;
+            }
+
+            jQuery.get(
+                '{{ uri.base.path }}user/assign', {user: user, group_id: group_id, project_id: project_id, assign: assign},
+                function (response) {
+                    if (response.error) {
+                        msg.html('<b style="color: red;">' + response.error + '</b>');
+
+                        return;
+                    }
+
+                    if (response.data.message) {
+                        msg.html('<b style="color: green;">' + response.data.message + '</b>');
+                    }
+
+                    jQuery('#ajaxListUsers').html('');
+
+                    $('#' + fieldName).val('').focus();
+                }
+            );
+        }
+
+        function listUsers(group_id) {
+            jQuery.get(
+                '{{ uri.base.path }}users/list', {group_id: group_id},
+                function (response) {
+
+                    var html = '';
+
+                    if (response.error) {
+                        html = 'error: ' + response.error;
+                    }
+                    else if (!response.data.options.length) {
+                        html = '<p>' + 'No users found.' + '</p>';
+                    }
+                    else {
+                        html = '<ul>';
+
+                        $.each(response.data.options, function (k, user) {
+                            html += '<li><a href="{{ uri.base.path }}user/' + user.id + '">'
+                                    + user.username + '</a></li>';
+                        });
+
+                        html += '</ul>';
+                    }
+
+                    jQuery('#ajaxListUsers').html(html);
+                }
+            );
+        }
+
+        // Initialize bootstrap-switch on elements
+        $('#can_view').bootstrapSwitch();
+        $('#can_create').bootstrapSwitch();
+        $('#can_edit').bootstrapSwitch();
+        $('#can_editown').bootstrapSwitch();
+        $('#can_manage').bootstrapSwitch();
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <h1>{{ project.title }}</h1>
+    </div>
+
+    {% if group.group_id %}
+        <h2>{{ "Edit Access Group"|_ }}</h2>
+    {% else %}
+        <h2>{{ "Add Access Group"|_ }}</h2>
+    {% endif %}
+
+    <form method="post" action="{{ uri.base.path }}project/{{ project.alias }}/savegroup" class="form-inline" name="editForm">
+
+        <div class="row-fluid">
+            <div class="span6">
+                <fieldset>
+
+                    <legend>{{ "Details"|_ }}</legend>
+
+                    {% if group.system %}
+                        <h4>{{ group.title }} (system)</h4>
+                        <input type="hidden" name="group[title]" id="title" value="{{ group.title }}">
+                    {% else %}
+                        <ul class="unstyled">
+                            <li>
+                                <label for="title">{{ "Title"|_ }}</label>
+                                <input type="text" name="group[title]" id="title" value="{{ group.title }}">
+                            </li>
+                        </ul>
+                    {% endif %}
+                </fieldset>
+            </div>
+            <div class="span6">
+                <fieldset>
+
+                    <legend>{{ "Permissions"|_ }}</legend>
+
+                    <ul class="unstyled">
+                        <li>
+                            <input type="checkbox" data-on="success" data-off="danger" data-on-label="<i class='icon-unlocked icon-white'></i>" data-off-label="<i class='icon-locked'></i>" id="can_view" name="group[can_view]"{{ group.can_view ? " checked='checked'" : "" }} />
+                            <label for="can_view">
+                                <i class="icon-eye-2"></i>
+                                {{ "View"|_ }}
+                            </label>
+                        </li>
+                        <li>
+                            <input type="checkbox" data-on="success" data-off="danger" data-on-label="<i class='icon-unlocked icon-white'></i>" data-off-label="<i class='icon-locked'></i>" id="can_create" name="group[can_create]"{{ group.can_create ? " checked='checked'" : "" }} />
+                            <label for="can_create">
+                                <i class="icon-plus-2"></i>
+                                {{ "Create"|_ }}
+                            </label>
+                        </li>
+                        <li>
+                            <input type="checkbox" data-on="success" data-off="danger" data-on-label="<i class='icon-unlocked icon-white'></i>" data-off-label="<i class='icon-locked'></i>" id="can_edit" name="group[can_edit]"{{ group.can_edit ? " checked='checked'" : "" }} />
+                            <label for="can_edit">
+                                <i class="icon-pencil"></i>
+                                {{ "Edit"|_ }}
+                            </label>
+                        </li>
+                        <li>
+                            <input type="checkbox" data-on="success" data-off="danger" data-on-label="<i class='icon-unlocked icon-white'></i>" data-off-label="<i class='icon-locked'></i>" id="can_editown" name="group[can_editown]"{{ group.can_editown ? " checked='checked'" : "" }} />
+                            <label for="can_editown">
+                                <i class="icon-pencil"></i>
+                                {{ "Edit own"|_ }}
+                            </label>
+                        </li>
+                        <li>
+                            <input type="checkbox" data-on="success" data-off="danger" data-on-label="<i class='icon-unlocked icon-white'></i>" data-off-label="<i class='icon-locked'></i>" id="can_manage" name="group[can_manage]"{{ group.can_manage ? " checked='checked'" : "" }} />
+                            <label for="can_manage">
+                                <i class="icon-user-3"></i>
+                                {{ "Manage"|_ }}
+                            </label>
+                        </li>
+                    </ul>
+                </fieldset>
+            </div>
+        </div>
+        {# Show this only for existing custom groups #}
+        {% if group.group_id %}
+
+            {% if not group.system %}
+                <fieldset>
+
+                <legend>{{ "Users"|_ }}</legend>
+
+                <div class="row-fluid" style="min-height: 200px;">
+                    <div class="span4">
+                        <label for="searchUser">{{ 'Add user'|_ }}</label>&nbsp;<span id="searchUser-msg"></span><br/>
+                        <input type="text" class="span6" id="searchUser" data-provide="typeahead"
+                               data-items="6" autocomplete="off" value="" placeholder="{{ 'username'|_ }}"/>
+
+                        <a class="btn" href="javascript:"
+                           onclick="assignUser(
+                                   $('#searchUser').val(), {{ group.group_id }}, {{ project.project_id }}, 1, 'searchUser'
+                                   );">
+                            {{ "Add user"|_ }}
+                        </a>
+                    </div>
+                    <div class="span4">
+                        <label for="searchUserGroup">{{ 'Remove user'|_ }}</label>&nbsp;<span
+                                id="searchUserGroup-msg"></span><br/>
+                        <input type="text" class="span6" id="searchUserGroup" data-provide="typeahead"
+                               data-items="6" autocomplete="off" value="" placeholder="{{ 'username'|_ }}"/>
+                        <a class="btn" href="javascript:"
+                           onclick="assignUser(
+                                   $('#searchUserGroup').val(), {{ group.group_id }}, {{ project.project_id }}, 0, 'searchUserGroup'
+                                   );">
+                            {{ "Remove user"|_ }}
+                        </a>
+                    </div>
+                    <div class="span4">
+                        <a class="btn" href="javascript:" onclick="listUsers({{ group.group_id }});">
+                            {{ "List assigned users"|_ }}
+                        </a>
+
+                        <div class="well-small" id="ajaxListUsers"></div>
+                    </div>
+
+                    <div id="ajax-errors" style="color: red;"></div>
+                </div>
+                </fieldset>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                {{ "Save the group to assign users."|_ }}
+            </div>
+        {% endif %}
+
+        <div>
+            <input type="hidden" name="group[project_id]" value="{{ project.project_id }}">
+            <input type="hidden" name="group[group_id]" value="{{ group.group_id }}">
+            <input type="hidden" name="group[system]" value="{{ group.system }}">
+        </div>
+    </form>
+{% endblock %}
