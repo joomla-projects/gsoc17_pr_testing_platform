@@ -28,39 +28,39 @@ use JTracker\Helper\GitHubHelper;
  */
 class Issues extends Project
 {
-    /**
-    * List of changed issue numbers.
-    *
-    * @var array
-    *
-    * @since __DEPLOY_VERSION__
-    */
-    protected $changedIssueNumbers = [];
+	/**
+	 * List of changed issue numbers.
+	 *
+	 * @var array
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected $changedIssueNumbers = [];
 
-    /**
-    * List of issues.
-    *
-    * @var array
-    *
-    * @since __DEPLOY_VERSION__
-    */
-    protected $issues = [];
+	/**
+	 * List of issues.
+	 *
+	 * @var array
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected $issues = [];
 
-    /**
-    * Status of issues.
-    *
-    * @var array
-    *
-    * @since __DEPLOY_VERSION__
-    */
-    protected $issueStates = ['open', 'closed'];
+	/**
+	 * Status of issues.
+	 *
+	 * @var array
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected $issueStates = ['open', 'closed'];
 
-    /**
-    * Constructor.
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function __construct()
 	{
 		parent::__construct();
 
@@ -75,14 +75,14 @@ class Issues extends Project
 		$this->description = g11n3t('Retrieve issues from GitHub.');
 	}
 
-    /**
-    * Execute the command.
-    *
-    * @return  void
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function execute()
+	/**
+	 * Execute the command.
+	 *
+	 * @return  void
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function execute()
 	{
 		$this->getApplication()->outputTitle(g11n3t('Retrieve Issues (PRs)'));
 
@@ -96,14 +96,14 @@ class Issues extends Project
 			->logOut(g11n3t('Finished.'));
 	}
 
-    /**
-    * Select the status of issues to process.
-    *
-    * @return  $this
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    protected function selectType()
+	/**
+	 * Select the status of issues to process.
+	 *
+	 * @return  $this
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	protected function selectType()
 	{
 		// Get status option
 		$status = $this->getOption('status');
@@ -144,14 +144,14 @@ class Issues extends Project
 		return $this;
 	}
 
-    /**
-    * Method to pull the list of issues from GitHub
-    *
-    * @return  $this
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    protected function fetchData()
+	/**
+	 * Method to pull the list of issues from GitHub
+	 *
+	 * @return  $this
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	protected function fetchData()
 	{
 		$issues = [];
 
@@ -166,7 +166,7 @@ class Issues extends Project
 			{
 				$page++;
 				$issues_more = $this->github->issues->getListByRepository(
-					// Owner
+				// Owner
 					$this->project->gh_user,
 					// Repository
 					$this->project->gh_project,
@@ -211,9 +211,9 @@ class Issues extends Project
 
 		usort(
 			$issues, function ($first, $second)
-			{
-				return $first->number - $second->number;
-			}
+		{
+			return $first->number - $second->number;
+		}
 		);
 
 		$this->logOut(
@@ -232,15 +232,15 @@ class Issues extends Project
 		return $this;
 	}
 
-    /**
-    * Method to process the list of issues and inject into the database as needed
-    *
-    * @return  $this
-    *
-    * @since   __DEPLOY_VERSION__
-    * @throws  \RuntimeException
-    */
-    protected function processData()
+	/**
+	 * Method to process the list of issues and inject into the database as needed
+	 *
+	 * @return  $this
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 * @throws  \RuntimeException
+	 */
+	protected function processData()
 	{
 		$ghIssues = $this->issues;
 		$dbIssues = $this->getDbIssues();
@@ -266,6 +266,7 @@ class Issues extends Project
 		{
 			// If the issue has a diff URL, it is a pull request.
 			if (isset($ghIssue->pull_request->diff_url)){
+
 				$this->usePBar
 					? $progressBar->update($count + 1)
 					: $this->out($ghIssue->number . '...', false);
@@ -277,202 +278,201 @@ class Issues extends Project
 					continue;
 				}
 
-        $pr = $this->github->pulls->get(
+				$pr = $this->github->pulls->get(
 					$this->project->gh_user, $this->project->gh_project, $ghIssue->number
 				);
 
 				// only prs with no conflicts
-				if ($pr->mergeable == '1'){{
-          $id = 0;
+				if ($pr->mergeable == '1'){
+					$id = 0;
 
-          foreach ($dbIssues as $dbIssue)
-          {
-            if ($ghIssue->number == $dbIssue->issue_number)
-            {
-              if ($this->force)
-              {
-                // Force update
-                $this->usePBar ? null : $this->out('F ', false);
-                $id = $dbIssue->id;
+					foreach ($dbIssues as $dbIssue)
+					{
+						if ($ghIssue->number == $dbIssue->issue_number)
+						{
+							if ($this->force)
+							{
+								// Force update
+								$this->usePBar ? null : $this->out('F ', false);
+								$id = $dbIssue->id;
 
-                break;
-              }
+								break;
+							}
 
-              $d1 = new Date($ghIssue->updated_at);
-              $d2 = new Date($dbIssue->modified_date);
+							$d1 = new Date($ghIssue->updated_at);
+							$d2 = new Date($dbIssue->modified_date);
 
-              if ($d1 == $d2)
-              {
-                // No update required
-                $this->usePBar ? null : $this->out('- ', false);
-                continue 2;
-              }
+							if ($d1 == $d2)
+							{
+								// No update required
+								$this->usePBar ? null : $this->out('- ', false);
+								continue 2;
+							}
 
-              $id = $dbIssue->id;
+							$id = $dbIssue->id;
 
-              break;
-            }
-          }
+							break;
+						}
+					}
 
-          // Store the item in the database
-          $table = new IssuesTable($this->getContainer()->get('db'));
+					// Store the item in the database
+					$table = new IssuesTable($this->getContainer()->get('db'));
 
-          if ($id)
-          {
-            $table->load($id);
-          }
+					if ($id)
+					{
+						$table->load($id);
+					}
 
-          $table->issue_number = $ghIssue->number;
-          $table->title        = $ghIssue->title;
+					$table->issue_number = $ghIssue->number;
+					$table->title        = $ghIssue->title;
 
-          if ($table->description_raw != $ghIssue->body)
-          {
-            $table->description = $this->github->markdown->render(
-              $ghIssue->body,
-              'gfm',
-              $this->project->gh_user . '/' . $this->project->gh_project
-            );
+					if ($table->description_raw != $ghIssue->body)
+					{
+						$table->description = $this->github->markdown->render(
+							$ghIssue->body,
+							'gfm',
+							$this->project->gh_user . '/' . $this->project->gh_project
+						);
 
-            $this->checkGitHubRateLimit($this->github->markdown->getRateLimitRemaining());
+						$this->checkGitHubRateLimit($this->github->markdown->getRateLimitRemaining());
 
-            $table->description_raw = $ghIssue->body;
-          }
+						$table->description_raw = $ghIssue->body;
+					}
 
-          $statusTable = new StatusTable($this->getContainer()->get('db'));
+					$statusTable = new StatusTable($this->getContainer()->get('db'));
 
-          // Get the list of status IDs based on the GitHub issue state
-          $state = ($ghIssue->state == 'open') ? false : true;
+					// Get the list of status IDs based on the GitHub issue state
+					$state = ($ghIssue->state == 'open') ? false : true;
 
-          $stateIds = $statusTable->getStateStatusIds($state);
+					$stateIds = $statusTable->getStateStatusIds($state);
 
-          // Check if the issue status is in the array; if it is, then the item didn't change open state and we don't need to change the status
-          if (!in_array($table->status, $stateIds))
-          {
-            $table->status = $state ? 10 : 1;
-          }
+					// Check if the issue status is in the array; if it is, then the item didn't change open state and we don't need to change the status
+					if (!in_array($table->status, $stateIds))
+					{
+						$table->status = $state ? 10 : 1;
+					}
 
-          $table->opened_date = (new Date($ghIssue->created_at))->format('Y-m-d H:i:s');
-          $table->opened_by   = $ghIssue->user->login;
+					$table->opened_date = (new Date($ghIssue->created_at))->format('Y-m-d H:i:s');
+					$table->opened_by   = $ghIssue->user->login;
 
-          $table->modified_date = (new Date($ghIssue->updated_at))->format('Y-m-d H:i:s');
-          $table->modified_by   = $ghIssue->user->login;
+					$table->modified_date = (new Date($ghIssue->updated_at))->format('Y-m-d H:i:s');
+					$table->modified_by   = $ghIssue->user->login;
 
-          $table->project_id = $this->project->project_id;
-          $table->milestone_id = ($ghIssue->milestone && isset($milestones[$ghIssue->milestone->number]))
-            ? $milestones[$ghIssue->milestone->number]
-            : null;
+					$table->project_id = $this->project->project_id;
+					$table->milestone_id = ($ghIssue->milestone && isset($milestones[$ghIssue->milestone->number]))
+						? $milestones[$ghIssue->milestone->number]
+						: null;
 
-          // We do not have a data about the default branch
-          // @todo We need to retrieve repository somehow
-          $table->build = 'master';
+					// We do not have a data about the default branch
+					// @todo We need to retrieve repository somehow
+					$table->build = 'master';
 
 
-          $gitHubHelper = new GitHubHelper(GithubFactory::getInstance($this->getApplication()));
+					$gitHubHelper = new GitHubHelper(GithubFactory::getInstance($this->getApplication()));
 
-          $table->has_code = 1;
+					$table->has_code = 1;
 
-          // Get the pull request corresponding to an issue.
-          $this->debugOut('Get PR for the issue');
+					// Get the pull request corresponding to an issue.
+					$this->debugOut('Get PR for the issue');
 
-          $pullRequest = $this->github->pulls->get(
-            $this->project->gh_user, $this->project->gh_project, $ghIssue->number
-          );
+					$pullRequest = $this->github->pulls->get(
+						$this->project->gh_user, $this->project->gh_project, $ghIssue->number
+					);
 
-          $table->build = $pullRequest->base->ref;
+					$table->build = $pullRequest->base->ref;
 
-          // If the $pullRequest->head->user object is not set, the repo/branch had been deleted by the user.
-          $table->pr_head_user = (isset($pullRequest->head->user))
-            ? $pullRequest->head->user->login
-            : 'unknown_repository';
+					// If the $pullRequest->head->user object is not set, the repo/branch had been deleted by the user.
+					$table->pr_head_user = (isset($pullRequest->head->user))
+						? $pullRequest->head->user->login
+						: 'unknown_repository';
 
-          $table->pr_head_ref = $pullRequest->head->ref;
-          $table->pr_head_sha = $pullRequest->head->sha;
+					$table->pr_head_ref = $pullRequest->head->ref;
+					$table->pr_head_sha = $pullRequest->head->sha;
 
-          $combinedStatus = $gitHubHelper->getCombinedStatus($this->project, $pullRequest->head->sha);
+					$combinedStatus = $gitHubHelper->getCombinedStatus($this->project, $pullRequest->head->sha);
 
-          // Save the merge status to database
-          $table->merge_state = $combinedStatus->state;
-          $table->gh_merge_status = json_encode($combinedStatus->statuses);
+					// Save the merge status to database
+					$table->merge_state = $combinedStatus->state;
+					$table->gh_merge_status = json_encode($combinedStatus->statuses);
 
-          // Get commits
-          $commits = $gitHubHelper->getCommits($this->project, $table->issue_number);
+					// Get commits
+					$commits = $gitHubHelper->getCommits($this->project, $table->issue_number);
 
-          $table->commits = json_encode($commits);
+					$table->commits = json_encode($commits);
 
-          // Get mergeability for the PR
+					// Get mergeability for the PR
 					$table->mergeable = ($pullRequest->mergeable == 'true' ? '1' : '0');
 
-          // Add the closed date if the status is closed
-          if ($ghIssue->closed_at)
-          {
-            $table->closed_date = (new Date($ghIssue->closed_at))->format('Y-m-d H:i:s');
-          }
+					// Add the closed date if the status is closed
+					if ($ghIssue->closed_at)
+					{
+						$table->closed_date = (new Date($ghIssue->closed_at))->format('Y-m-d H:i:s');
+					}
 
-          // If the title has a [# in it, assume it's a JoomlaCode Tracker ID
-          if (preg_match('/\[#([0-9]+)\]/', $ghIssue->title, $matches))
-          {
-            $table->foreign_number = $matches[1];
-          }
-          // If the body has tracker_item_id= in it, that is a JoomlaCode Tracker ID
-          elseif (preg_match('/tracker_item_id=([0-9]+)/', $ghIssue->body, $matches))
-          {
-            $table->foreign_number = $matches[1];
-          }
+					// If the title has a [# in it, assume it's a JoomlaCode Tracker ID
+					if (preg_match('/\[#([0-9]+)\]/', $ghIssue->title, $matches))
+					{
+						$table->foreign_number = $matches[1];
+					}
+					// If the body has tracker_item_id= in it, that is a JoomlaCode Tracker ID
+					elseif (preg_match('/tracker_item_id=([0-9]+)/', $ghIssue->body, $matches))
+					{
+						$table->foreign_number = $matches[1];
+					}
 
-          $table->labels = implode(',', $this->getLabelIds($ghIssue->labels));
+					$table->labels = implode(',', $this->getLabelIds($ghIssue->labels));
 
-          $table->check()
-            ->store(true);
+					$table->check()
+						->store(true);
 
-          if (!$table->id)
-          {
-            // Bad coder :( - @todo when does this happen ??
-            throw new \RuntimeException(
-              sprintf(
-                'Invalid issue id for issue: %1$d in project id %2$s',
-                $ghIssue->number, $this->project->project_id
-              )
-            );
-          }
+					if (!$table->id)
+					{
+						// Bad coder :( - @todo when does this happen ??
+						throw new \RuntimeException(
+							sprintf(
+								'Invalid issue id for issue: %1$d in project id %2$s',
+								$ghIssue->number, $this->project->project_id
+							)
+						);
+					}
 
-          /*
-          @todo see issue #194
-          Add an open record to the activity table
-          $activity               = new ActivitiesTable($db);
-          $activity->project_id   = $this->project->project_id;
-          $activity->issue_number = (int) $table->issue_number;
-          $activity->user         = $issue->user->login;
-          $activity->event        = 'open';
-          $activity->created_date = $table->opened_date;
+					/*
+					@todo see issue #194
+					Add an open record to the activity table
+					$activity               = new ActivitiesTable($db);
+					$activity->project_id   = $this->project->project_id;
+					$activity->issue_number = (int) $table->issue_number;
+					$activity->user         = $issue->user->login;
+					$activity->event        = 'open';
+					$activity->created_date = $table->opened_date;
 
-          $activity->store();
+					$activity->store();
 
-          / Add a close record to the activity table if the status is closed
-          if ($issue->closed_at)
-          {
-            $activity               = new ActivitiesTable($db);
-            $activity->project_id   = $this->project->project_id;
-            $activity->issue_number = (int) $table->issue_number;
-            $activity->event        = 'close';
-            $activity->created_date = $issue->closed_at;
+					/ Add a close record to the activity table if the status is closed
+					if ($issue->closed_at)
+					{
+						$activity               = new ActivitiesTable($db);
+						$activity->project_id   = $this->project->project_id;
+						$activity->issue_number = (int) $table->issue_number;
+						$activity->event        = 'close';
+						$activity->created_date = $issue->closed_at;
 
-            $activity->store();
-          }
-          */
+						$activity->store();
+					}
+					*/
 
-          // Store was successful, update status
-          if ($id)
-          {
-            ++ $updated;
-          }
-          else
-          {
-            ++ $added;
-          }
+					// Store was successful, update status
+					if ($id)
+					{
+						++ $updated;
+					}
+					else
+					{
+						++ $added;
+					}
 
-          $this->changedIssueNumbers[] = $ghIssue->number;
-
-        }
+					$this->changedIssueNumbers[] = $ghIssue->number;
+				}
 
 			}
 
@@ -485,16 +485,16 @@ class Issues extends Project
 		return $this;
 	}
 
-    /**
-    * Get a set of ids from label names.
-    *
-    * @param   array  $labelObjects  Array of label objects
-    *
-    * @return  array
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    private function getLabelIds($labelObjects)
+	/**
+	 * Get a set of ids from label names.
+	 *
+	 * @param   array  $labelObjects  Array of label objects
+	 *
+	 * @return  array
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	private function getLabelIds($labelObjects)
 	{
 		static $labels = [];
 
@@ -507,9 +507,9 @@ class Issues extends Project
 
 			$labelList = $db ->setQuery(
 				$db->getQuery(true)
-				->from($db->quoteName($table->getTableName()))
-				->select(['label_id', 'name'])
-				->where($db->quoteName('project_id') . ' = ' . $this->project->project_id)
+					->from($db->quoteName($table->getTableName()))
+					->select(['label_id', 'name'])
+					->where($db->quoteName('project_id') . ' = ' . $this->project->project_id)
 			)->loadObjectList();
 
 			foreach ($labelList as $labelObject)
@@ -535,14 +535,14 @@ class Issues extends Project
 		return $ids;
 	}
 
-    /**
-    * Get the milestones for the active project.
-    *
-    * @return  array  An associative array of the milestone id's keyed by the Github milestone number.
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    private function getMilestones()
+	/**
+	 * Get the milestones for the active project.
+	 *
+	 * @return  array  An associative array of the milestone id's keyed by the Github milestone number.
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	private function getMilestones()
 	{
 		/* @type \Joomla\Database\DatabaseDriver $db */
 		$db = $this->getContainer()->get('db');
@@ -558,26 +558,26 @@ class Issues extends Project
 		return $milestoneList;
 	}
 
-    /**
-    * Get an array of changed issue numbers.
-    *
-    * @return  array
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getChangedIssueNumbers()
+	/**
+	 * Get an array of changed issue numbers.
+	 *
+	 * @return  array
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getChangedIssueNumbers()
 	{
 		return $this->changedIssueNumbers;
 	}
 
-    /**
-    * Method to get the GitHub issues from the database
-    *
-    * @return  $this
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    protected function getDbIssues()
+	/**
+	 * Method to get the GitHub issues from the database
+	 *
+	 * @return  $this
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	protected function getDbIssues()
 	{
 		/* @type \Joomla\Database\DatabaseDriver $db */
 		$db = $this->getContainer()->get('db');
@@ -588,7 +588,7 @@ class Issues extends Project
 			->select($db->quoteName('id'))
 			->select($db->quoteName('issue_number'))
 			->select($db->quoteName('modified_date'))
-      ->select($db->quoteName('mergeable'))
+			->select($db->quoteName('mergeable'))
 			->from($db->quoteName('#__issues'))
 			->where($db->quoteName('project_id') . '=' . (int) $this->project->project_id);
 
