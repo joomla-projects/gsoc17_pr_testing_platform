@@ -6,31 +6,33 @@
 !.keepme
 
 # Ignore variable dat
-!*/log/[a-z0-9-]*
-!*/data/*
-!*/backups/*
+/src/log/[a-z0-9-]*
+/src/data/*
+!/src/data/www/php71/dbox-tests/
+
+/src/backups/
 
 # Ignore custom MySQL configs
-!*/cfg/mysql-5.5/*.cnf
-!*/cfg/mysql-5.6/*.cnf
-!*/cfg/mysql-5.7/*.cnf
-!*/cfg/mysql-8.0/*.cnf
-!*/cfg/mariadb-5/*.cnf
-!*/cfg/mariadb-10.0/*.cnf
-!*/cfg/mariadb-10.1/*.cnf
-!*/cfg/mariadb-10.2/*.cnf
-!*/cfg/percona-5.5/*.cnf
-!*/cfg/percona-5.6/*.cnf
-!*/cfg/percona-5.7/*.cnf
+/src/cfg/mysql-5.5/*.cnf
+/src/cfg/mysql-5.6/*.cnf
+/src/cfg/mysql-5.7/*.cnf
+/src/cfg/mysql-8.0/*.cnf
+/src/cfg/mariadb-5/*.cnf
+/src/cfg/mariadb-10.0/*.cnf
+/src/cfg/mariadb-10.1/*.cnf
+/src/cfg/mariadb-10.2/*.cnf
+/src/cfg/percona-5.5/*.cnf
+/src/cfg/percona-5.6/*.cnf
+/src/cfg/percona-5.7/*.cnf
 
 # Ignore custom PHP-FPM configs
-!*/cfg/php-fpm-5.4/*.ini
-!*/cfg/php-fpm-5.5/*.ini
-!*/cfg/php-fpm-5.6/*.ini
-!*/cfg/php-fpm-7.0/*.ini
-!*/cfg/php-fpm-7.1/*.ini
-!*/cfg/php-fpm-7.2/*.ini
-!*/cfg/hhvm-latest/*.ini
+/src/cfg/php-fpm-5.4/*.ini
+/src/cfg/php-fpm-5.5/*.ini
+/src/cfg/php-fpm-5.6/*.ini
+/src/cfg/php-fpm-7.0/*.ini
+/src/cfg/php-fpm-7.1/*.ini
+/src/cfg/php-fpm-7.2/*.ini
+/src/cfg/hhvm-latest/*.ini
 
 
 ######################################
@@ -39,13 +41,14 @@
 
 ###### std ######
 .lock
-*.log
+/src/.lock
+/src/*.log
 
 ###### patches/diffs ######
-*.patch
-*.diff
-*.orig
-*.rej
+/src/*.patch
+/src/*.diff
+/src/*.orig
+/src/*.rej
 
 
 ######################################

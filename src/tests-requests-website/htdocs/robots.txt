@@ -1,5 +1,0 @@
-###
-# For domain: http://issues.joomla.org
-###
-
-User-agent: *
