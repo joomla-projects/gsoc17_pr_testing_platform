@@ -30,6 +30,8 @@
 
         <input type="hidden" name="instance[user_id]" value="{{ user.id }}"/>
         <input type="hidden" name="instance[pr_id]" value="{{ item.issue_number }}"/>
+        <input type="hidden" name="instance[target_branch]" value="{{ item.build }}"/>
+
 
         <a class="btn btn-primary" href="javascript:" onclick="document.testRequestForm.submit();">
             {{ "Generate Joomla! instance"|_ }}

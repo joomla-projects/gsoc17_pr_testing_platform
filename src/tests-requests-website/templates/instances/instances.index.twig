@@ -22,21 +22,21 @@
         </tr>
 
         {% for instance in instances %}
-                <tr>
-                    <td>
-                        <a href="{{ uri.base.path }}instance/{{ instance.instance_id }}">
-                            Joomla Instance #{{ instance.instance_id }}
-                        </a>
-                    </td>
-                    <td>
-                        <a href="http://{{ instance.instance_id }}.dbox-tests.ml" target="_blank">
-                            {{ instance.instance_id }}.dbox-tests.ml
-                        </a>
-                    </td>
-                    <td class="center valign-center">
-                        <a class="btn btn-danger" href="{{ uri.base.path }}instance/{{ instance.instance_id }}/delete">{{ "Discard"|_ }}</a>
-                    </td>
-                </tr>
+            <tr>
+                <td>
+                    <a href="{{ uri.base.path }}instance/{{ instance.instance_id }}">
+                        Joomla Instance #{{ instance.instance_id }}
+                    </a>
+                </td>
+                <td>
+                    <a href="http://{{ instance.instance_id }}.dbox-tests.ml" target="_blank">
+                        {{ instance.instance_id }}.dbox-tests.ml
+                    </a>
+                </td>
+                <td class="center valign-center">
+                    <a class="btn btn-danger" href="{{ uri.base.path }}instance/{{ instance.instance_id }}/delete">{{ "Discard"|_ }}</a>
+                </td>
+            </tr>
         {% endfor %}
     </table>
 {% endblock %}

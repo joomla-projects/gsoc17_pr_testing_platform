@@ -1,6 +1,6 @@
 {
-	"instances" 					: "\\Instances\\Controller\\Instances",
-	"instance/add" 					: "\\Instances\\Controller\\Instance\\Add",
-	"instance/:instance_id"			: "\\Instances\\Controller\\Instance",
+	"instances" 				: "\\Instances\\Controller\\Instances",
+	"instance/add" 				: "\\Instances\\Controller\\Instance\\Add",
+	"instance/:instance_id"		: "\\Instances\\Controller\\Instance",
 	"instance/:instance_id/delete"	: "\\Instances\\Controller\\Instance\\Delete"
 }

@@ -24,6 +24,10 @@
         <a class="btn btn-primary" href="http://{{ instance.instance_id }}.dbox-tests.ml" target="_blank">
             {{ "Go to instance"|_ }}
         </a>
+
+        <a class="btn btn-primary" href="http://{{ instance.php_version ~ instance.user_id ~ instance.pr_id ~ instance.target_branch}}.dbox-tests.ml" target="_blank">
+            {{ "Target branch instance"|_ }}
+        </a>
     </div>
 
     <div class="page-header">
@@ -74,6 +78,7 @@
         <tr>
             <th>{{ "PHP version"|_ }}</th>
             <th>{{ "Pull Request"|_ }}</th>
+            <th>{{ "Target Branch"|_ }}</th>
             <th>{{ "Instance lifetime left"|_ }}</th>
         </tr>
 
@@ -97,6 +102,13 @@
                    target="_blank" title="{{ 'View this PR on GitHub'|_ }}">
                     <span class="octicon octicon-mark-github"></span>
                     # {{ instance.pr_id }}
+                </a>
+            </td>
+            <td>
+                <a href="https://github.com/{{ 'TestOrg11111111/testrepo1/tree/' ~ instance.target_branch }}"
+                   target="_blank" title="{{ 'View this branch on GitHub'|_ }}">
+                    <span class="octicon octicon-git-branch"></span>
+                    {{ instance.target_branch }}
                 </a>
             </td>
             <td>
@@ -137,13 +149,13 @@
                 // Display the result in the element with id="counter"
                 document.getElementById("counter").innerHTML =
                     '<div><p>' + hours + ' hours, ' + minutes + ' minutes, ' +
-                     seconds + ' seconds</p></div>';
+                    seconds + ' seconds</p></div>';
 
                 // If the count down is finished the instance has expired
                 if (distance < 0) {
                     clearInterval(x);
                     document.getElementById("counter").innerHTML = "Expired";
-                    window.location.href = "{{ uri.base.path }}instance/{{ instance.instance_id }}/delete";
+                    //window.location.href = "{{ uri.base.path }}instance/{{ instance.instance_id }}/delete";
                 }
             }
         }
