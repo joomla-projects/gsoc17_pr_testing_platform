@@ -3,7 +3,7 @@
 ## |  PR Testing Platform Stack  |
 ## -------------------------------
 ##
-## Modified LAMP stack based on Devilbox
+## Modified LAMP/LEMP stack based on Devilbox
 ##
 ##
 ## ${VARIABLE:-default} will evaluate to default if VARIABLE is unset or empty in the environment.
@@ -128,6 +128,7 @@ services:
       - HOST_PORT_HTTPD56
       - HOST_PORT_MYSQL
       - HOST_PORT_PGSQL
+      - HOST_PORT_REDIS
       - HOST_PORT_MEMCD
       # Data dir paths
       - HOST_PATH_HTTPD_DATADIR
@@ -141,6 +142,7 @@ services:
       - HTTPD_SERVER
       - PGSQL_SERVER
       - MYSQL_SERVER
+      - REDIS_SERVER
       - MEMCD_SERVER
 
     networks:
@@ -253,6 +255,7 @@ services:
       - HOST_PORT_HTTPD70
       - HOST_PORT_MYSQL
       - HOST_PORT_PGSQL
+      - HOST_PORT_REDIS
       - HOST_PORT_MEMCD
       # Data dir paths
       - HOST_PATH_HTTPD_DATADIR
@@ -266,6 +269,7 @@ services:
       - HTTPD_SERVER
       - PGSQL_SERVER
       - MYSQL_SERVER
+      - REDIS_SERVER
       - MEMCD_SERVER
 
     networks:
@@ -378,6 +382,7 @@ services:
       - HOST_PORT_HTTPD71
       - HOST_PORT_MYSQL
       - HOST_PORT_PGSQL
+      - HOST_PORT_REDIS
       - HOST_PORT_MEMCD
       # Data dir paths
       - HOST_PATH_HTTPD_DATADIR
@@ -391,6 +396,7 @@ services:
       - HTTPD_SERVER
       - PGSQL_SERVER
       - MYSQL_SERVER
+      - REDIS_SERVER
       - MEMCD_SERVER
 
     networks:
