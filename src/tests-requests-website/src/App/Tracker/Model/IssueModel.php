@@ -24,26 +24,26 @@ use JTracker\Model\AbstractTrackerDatabaseModel;
  */
 class IssueModel extends AbstractTrackerDatabaseModel
 {
-    /**
-    * Context string for the model type.  This is used to handle uniqueness
-    * when dealing with the getStoreId() method and caching data structures.
-    *
-    * @var    string
-    * @since __DEPLOY_VERSION__
-    */
-    protected $context = 'com_tracker.issue';
+	/**
+	 * Context string for the model type.  This is used to handle uniqueness
+	 * when dealing with the getStoreId() method and caching data structures.
+	 *
+	 * @var    string
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected $context = 'com_tracker.issue';
 
-    /**
-    * Get an item.
-    *
-    * @param   integer  $identifier  The item identifier.
-    *
-    * @return  IssuesTable
-    *
-    * @since   __DEPLOY_VERSION__
-    * @throws  \RuntimeException
-    */
-    public function getItem($identifier)
+	/**
+	 * Get an item.
+	 *
+	 * @param   integer  $identifier  The item identifier.
+	 *
+	 * @return  IssuesTable
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 * @throws  \RuntimeException
+	 */
+	public function getItem($identifier)
 	{
 		if (!$identifier)
 		{
@@ -265,17 +265,17 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		return $item;
 	}
 
-    /**
-    * Get user tests for a PR.
-    *
-    * @param   integer  $itemId  The issue ID.
-    * @param   string   $sha     The commit SHA.
-    *
-    * @return array
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getUserTests($itemId, $sha)
+	/**
+	 * Get user tests for a PR.
+	 *
+	 * @param   integer  $itemId  The issue ID.
+	 * @param   string   $sha     The commit SHA.
+	 *
+	 * @return array
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getUserTests($itemId, $sha)
 	{
 		$tests = [];
 
@@ -307,16 +307,16 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		return $tests;
 	}
 
-    /**
-    * Get all user tests for a PR.
-    *
-    * @param   integer  $itemId  The issue ID.
-    *
-    * @return array
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getAllTests($itemId)
+	/**
+	 * Get all user tests for a PR.
+	 *
+	 * @param   integer  $itemId  The issue ID.
+	 *
+	 * @return array
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getAllTests($itemId)
 	{
 		return $this->db->setQuery(
 			$this->db->getQuery(true)
@@ -327,19 +327,19 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		)->loadColumn();
 	}
 
-    /**
-    * Get a user test for an item.
-    *
-    * @param   integer  $itemId    The item number
-    * @param   string   $username  The user name
-    * @param   string   $sha       The commit SHA.
-    *
-    * @return  null|integer  Null - the test was not submitted,
-    *                        integer - the value of test: 0 - not tested; 1 - tested successfully; 2 - tested unsuccessfully
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getUserTest($itemId, $username, $sha)
+	/**
+	 * Get a user test for an item.
+	 *
+	 * @param   integer  $itemId    The item number
+	 * @param   string   $username  The user name
+	 * @param   string   $sha       The commit SHA.
+	 *
+	 * @return  null|integer  Null - the test was not submitted,
+	 *                        integer - the value of test: 0 - not tested; 1 - tested successfully; 2 - tested unsuccessfully
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getUserTest($itemId, $username, $sha)
 	{
 		if (!$sha)
 		{
@@ -356,17 +356,17 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		)->loadResult();
 	}
 
-    /**
-    * Get a random issue number.
-    *
-    * @param   integer  $previousRandom  The previously returned random issue number
-    *
-    * @return  integer A random issue number.
-    *
-    * @since   __DEPLOY_VERSION__
-    * @throws  \RuntimeException
-    */
-    public function getRandomNumber($previousRandom = 0)
+	/**
+	 * Get a random issue number.
+	 *
+	 * @param   integer  $previousRandom  The previously returned random issue number
+	 *
+	 * @return  integer A random issue number.
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 * @throws  \RuntimeException
+	 */
+	public function getRandomNumber($previousRandom = 0)
 	{
 		$issueNumber = $this->db->setQuery(
 			$this->db->getQuery(true)
@@ -391,14 +391,14 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		return $issueNumber;
 	}
 
-    /**
-    * Get the next issue number - for local (non GitHub) projects.
-    *
-    * @return  integer
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getNextNumber()
+	/**
+	 * Get the next issue number - for local (non GitHub) projects.
+	 *
+	 * @return  integer
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getNextNumber()
 	{
 		$number = $this->db->setQuery(
 			$this->db->getQuery(true)
@@ -410,14 +410,14 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		return $number + 1;
 	}
 
-    /**
-    * Get a status list.
-    *
-    * @return  array
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getStatuses()
+	/**
+	 * Get a status list.
+	 *
+	 * @return  array
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getStatuses()
 	{
 		return $this->db->setQuery(
 			$this->db->getQuery(true)
@@ -426,16 +426,16 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		)->loadObjectList();
 	}
 
-    /**
-    * Add the item.
-    *
-    * @param   array  $src  The source.
-    *
-    * @return  $this
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function add(array $src)
+	/**
+	 * Add the item.
+	 *
+	 * @param   array  $src  The source.
+	 *
+	 * @return  $this
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function add(array $src)
 	{
 		// Store the issue
 		$table = (new IssuesTable($this->db))
@@ -450,17 +450,17 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		return $this;
 	}
 
-    /**
-    * Save the item.
-    *
-    * @param   array  $src  The source.
-    *
-    * @return  $this
-    *
-    * @since   __DEPLOY_VERSION__
-    * @throws  \RuntimeException
-    */
-    public function save(array $src)
+	/**
+	 * Save the item.
+	 *
+	 * @param   array  $src  The source.
+	 *
+	 * @return  $this
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 * @throws  \RuntimeException
+	 */
+	public function save(array $src)
 	{
 		$filter = new InputFilter;
 
@@ -475,7 +475,7 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		$data['description_raw'] = $filter->clean($src['description_raw'], 'raw');
 		$data['rel_number']      = $filter->clean($src['rel_number'], 'int');
 		$data['rel_type']        = $filter->clean($src['rel_type'], 'int');
-    $data['mergeable']       = $filter->clean($src['mergeable'], 'int');
+		$data['mergeable']       = $filter->clean($src['mergeable'], 'int');
 
 
 		if (isset($src['commits']))
@@ -559,19 +559,19 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		return $this;
 	}
 
-    /**
-    * Update vote data for an issue
-    *
-    * @param   integer  $id           The issue ID
-    * @param   integer  $experienced  Whether the user has experienced the issue
-    * @param   integer  $importance   The importance of the issue to the user
-    * @param   integer  $userID       The user ID of the user submitting the vote
-    *
-    * @return  object
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function vote($id, $experienced, $importance, $userID)
+	/**
+	 * Update vote data for an issue
+	 *
+	 * @param   integer  $id           The issue ID
+	 * @param   integer  $experienced  Whether the user has experienced the issue
+	 * @param   integer  $importance   The importance of the issue to the user
+	 * @param   integer  $userID       The user ID of the user submitting the vote
+	 *
+	 * @return  object
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function vote($id, $experienced, $importance, $userID)
 	{
 		$db    = $this->getDb();
 		$query = $db->getQuery(true);
@@ -631,51 +631,51 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		return $db->setQuery($query)->loadObject();
 	}
 
-    /**
-    * Translate the status id to either 'open' or 'closed'.
-    *
-    * @param   integer  $statusId  The status id.
-    *
-    * @return string
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getOpenClosed($statusId)
+	/**
+	 * Translate the status id to either 'open' or 'closed'.
+	 *
+	 * @param   integer  $statusId  The status id.
+	 *
+	 * @return string
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getOpenClosed($statusId)
 	{
 		$table = (new StatusTable($this->getDb()))->load($statusId);
 
 		return $table->closed ? 'closed' : 'open';
 	}
 
-    /**
-    * Translate the status id to a proper name.
-    *
-    * @param   integer  $statusId  The status id.
-    *
-    * @return string
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getStatusName($statusId)
+	/**
+	 * Translate the status id to a proper name.
+	 *
+	 * @param   integer  $statusId  The status id.
+	 *
+	 * @return string
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getStatusName($statusId)
 	{
 		return (new StatusTable($this->getDb()))
 			->load($statusId)
 			->status;
 	}
 
-    /**
-    * Save a user test result.
-    *
-    * @param   integer  $itemId    The item ID
-    * @param   string   $userName  The user name
-    * @param   string   $result    The test result
-    * @param   string   $sha       The SHA at which the item has been tested.
-    *
-    * @return  object  StdClass with array of usernames for successful and failed tests
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function saveTest($itemId, $userName, $result, $sha)
+	/**
+	 * Save a user test result.
+	 *
+	 * @param   integer  $itemId    The item ID
+	 * @param   string   $userName  The user name
+	 * @param   string   $result    The test result
+	 * @param   string   $sha       The SHA at which the item has been tested.
+	 *
+	 * @return  object  StdClass with array of usernames for successful and failed tests
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function saveTest($itemId, $userName, $result, $sha)
 	{
 		// Check for existing test
 		$id = $this->db->setQuery(
@@ -744,16 +744,16 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		return $data;
 	}
 
-    /**
-    * Get an issue number by its ID.
-    *
-    * @param   integer  $id  The issue ID.
-    *
-    * @return  integer
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getIssueNumberById($id)
+	/**
+	 * Get an issue number by its ID.
+	 *
+	 * @param   integer  $id  The issue ID.
+	 *
+	 * @return  integer
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getIssueNumberById($id)
 	{
 		return $this->db->setQuery(
 			$this->db->getQuery(true)
@@ -763,16 +763,16 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		)->loadResult();
 	}
 
-    /**
-    * Get an issue categories by its ID.
-    *
-    * @param   integer  $id  The issue ID.
-    *
-    * @return  array  The list of issue categories
-    *
-    * @since   __DEPLOY_VERSION__
-    */
-    public function getCategories($id)
+	/**
+	 * Get an issue categories by its ID.
+	 *
+	 * @param   integer  $id  The issue ID.
+	 *
+	 * @return  array  The list of issue categories
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getCategories($id)
 	{
 		return $this->db->setQuery(
 			$this->db->getQuery(true)
