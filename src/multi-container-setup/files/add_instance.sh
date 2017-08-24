@@ -11,7 +11,7 @@ DOMAIN="domain"
 REPOSITORY="repository"
 DB_PASSWORD="password"
 INSTANCE_FOLDER=${INSTANCE_ID}.${DOMAIN}
-
+DB_NAME="joomla-${INSTANCE_ID}"
 
 ####################################
 # Creates folder for joomla instance

@@ -3,7 +3,7 @@
 ##########################
 # This script will be located on the files folder
 
-PR_ID=$1
+TARGET_BRANCH=$1
 PHP_VERSION=$2
 INSTANCE_ID=$3
 
@@ -12,6 +12,7 @@ REPOSITORY="repository"
 DB_PASSWORD="password"
 INSTANCE_FOLDER=${INSTANCE_ID}.${DOMAIN}
 DB_NAME="joomla-${INSTANCE_ID}"
+
 
 ####################################
 # Creates folder for joomla instance
@@ -22,7 +23,7 @@ mkdir httpd/${INSTANCE_FOLDER}/htdocs
 ####################################################################
 # Copies the PR code from jenkins workspace into the instance folder
 
-cp -r /var/jenkins/workspace/${REPOSITORY}/origin/pr/${PR_ID}/merge/. httpd/${INSTANCE_FOLDER}/htdocs
+cp -r /var/jenkins/workspace/${REPOSITORY}/${TARGET_BRANCH}/. httpd/${INSTANCE_FOLDER}/htdocs
 #git clone --depth 1 -b 4.0-dev --single-branch https://github.com/joomla/joomla-cms.git ${INSTANCE_FOLDER}/htdocs
 
 echo "Joomla PR code placed in the instance folder in the php${PHP_VERSION} container."
