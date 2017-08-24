@@ -475,6 +475,8 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		$data['description_raw'] = $filter->clean($src['description_raw'], 'raw');
 		$data['rel_number']      = $filter->clean($src['rel_number'], 'int');
 		$data['rel_type']        = $filter->clean($src['rel_type'], 'int');
+    $data['mergeable']       = $filter->clean($src['mergeable'], 'int');
+
 
 		if (isset($src['commits']))
 		{

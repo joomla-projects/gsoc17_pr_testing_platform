@@ -1,21 +1,21 @@
 {
 	"database": {
 		"driver"  : "mysqli",
-		"host"    : "",
-		"user"    : "",
-		"password": "",
-		"name"    : "",
-		"prefix"  : ""
+		"host"    : "place DB host",
+		"user"    : "place DB user",
+		"password": "place DB password",
+		"name"    : "DB name",
+		"prefix"  : "prefix_"
 	},
 
 	"github": {
-		"client_id"    : "",
-		"client_secret": "",
+		"client_id"    : "place github oath app client id",
+		"client_secret": "place github oath app client secret",
 		"auth_scope"   : "public_repo",
 		"accounts"     : [
 			{
-				"username": "",
-				"password": ""
+				"username": "github user name",
+				"password": "github user password"
 			}
 		]
 	},

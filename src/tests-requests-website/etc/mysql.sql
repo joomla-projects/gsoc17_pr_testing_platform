@@ -1,8 +1,13 @@
--- ####################################################################
+-- MySQL dump 10.13  Distrib 5.6.30, for debian-linux-gnu (x86_64)
+--
+-- ------------------------------------------------------
+-- Server version	5.6.36-log
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8 */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
@@ -176,6 +181,7 @@ CREATE TABLE `#__issues` (
   `merge_state` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The merge state',
   `gh_merge_status` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The GitHub merge status (JSON encoded)',
   `commits` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Commits of the PR',
+  `mergeable` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Flag a PR as mergeable or not if there are conflicts',
   PRIMARY KEY (`id`),
   UNIQUE KEY `issue_project_index` (`issue_number`,`project_id`),
   KEY `status` (`status`),
@@ -429,6 +435,7 @@ CREATE TABLE `#__instances` (
   `user_id` int(11) NOT NULL DEFAULT '0' COMMENT 'User ID',
   `pr_id` int(11) unsigned NOT NULL COMMENT 'Pull Request ID',
   `requested_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Date and time when instance was requested',
+  `target_branch` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Target branch for this instance',
   PRIMARY KEY (`instance_id`),
   CONSTRAINT `#__instances_fk_pr_id` FOREIGN KEY (`pr_id`) REFERENCES `#__issues` (`issue_number`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `#__instances_fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `#__users` (`id`)

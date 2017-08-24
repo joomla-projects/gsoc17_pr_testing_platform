@@ -17,7 +17,8 @@ use Joomla\Database\DatabaseDriver;
  * @property   integer  $php_version       PHP version
  * @property   integer  $user_id           Github user ID
  * @property   integer  $pr_id             Pull Request ID
- * @property   integer  $requested_at      Date and time when instance was requested
+ * @property   string   $requested_at      Date and time when instance was requested
+ * @property   string   $target_branch     PR target branch
  *
  * @since __DEPLOY_VERSION__
  */
@@ -63,6 +64,13 @@ class JoomlaInstance implements \Serializable
 	 */
 	protected $requested_at;
 
+	/**
+	 * PR target branch
+	 *
+	 * @var    string
+	 * @since __DEPLOY_VERSION__
+	 */
+	protected $target_branch;
 
     /**
     * @var    DatabaseDriver
@@ -179,6 +187,18 @@ class JoomlaInstance implements \Serializable
 	public function getRequested_At()
 	{
 		return $this->requested_at;
+	}
+
+	/**
+	 * Get the target branch
+	 *
+	 * @return  string
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getTarget_Branch()
+	{
+		return $this->target_branch;
 	}
 
     /**

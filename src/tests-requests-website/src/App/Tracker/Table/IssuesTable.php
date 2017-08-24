@@ -47,6 +47,7 @@ use JTracker\Database\AbstractDatabaseTable;
  * @property   string   $merge_state      The merge state
  * @property   string   $gh_merge_status  The GitHub merge status (JSON encoded)
  * @property   string   $commits          Commits of the PR
+ * @property   integer  $mergeable        Flag whether PR is mergeable or not
  *
  * @since __DEPLOY_VERSION__
  */
