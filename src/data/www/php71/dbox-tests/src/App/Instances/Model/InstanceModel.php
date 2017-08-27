@@ -100,13 +100,25 @@ class InstanceModel extends AbstractTrackerDatabaseModel
 	 */
 	public function delete($instance_id)
 	{
-		// Remove the joomla instance
+
 		$db    = $this->getDb();
 		$query = $db->getQuery(true);
 
+		//get the target branch for this instance
+		$query->select('i.target_branch, i.instance_id');
+		$query->from($db->quoteName('#__instances', 'i'));
+		$query->where($db->quoteName('i.instance_id') . ' = ' . $db->quote($instance_id));
+
+		$row = $this->db->setQuery($query)->loadRow();
+		$target_branch = $row[0];
+
+		$db    = $this->getDb();
+		$query = $db->getQuery(true);
+
+		// Remove the joomla instance
 		$db->setQuery(
 			$query->delete('#__instances')
-				->where('instance_id' . '=' . $instance_id)
+				->where('instance_id' . '=' . $db->quote($instance_id))
 		)->execute();
 
 		$php_version = substr($instance_id, 0, 2);
@@ -118,6 +130,14 @@ class InstanceModel extends AbstractTrackerDatabaseModel
 
 		$output = [];
 		$return = null;
+		exec($command, $output, $return);
+
+		$tgtBranch_id = $instance_id . "-" . $target_branch;
+
+		$removeInstanceCmdArgs = $php_version . " " . $tgtBranch_id;
+
+		$command = "docker exec --user root " . $container_name . " /bin/sh -c \"cd shared; ./files/remove_instance.sh " . $removeInstanceCmdArgs . ";\"";
+
 		exec($command, $output, $return);
 
 		// Delete the category from the table
@@ -140,14 +160,14 @@ class InstanceModel extends AbstractTrackerDatabaseModel
 	{
 		$filter = new InputFilter;
 
-		$instanceID = $src['php_version'] . $src['user_id'] . $src['pr_id'];
+		$instanceID = $src['php_version'] . 'u' . $src['user_id'] . 'p' . $src['pr_id'];
 
 		$src['instance_id'] = $instanceID;
 
 		$db = $this->db;
 
 		$data = [
-			'instance_id'   => $filter->clean($instanceID, 'uint'),
+			'instance_id'   => $db->quote($filter->clean($instanceID, 'string')),
 			'php_version'   => $filter->clean($src['php_version'], 'uint'),
 			'user_id'       => $filter->clean($src['user_id'], 'uint'),
 			'pr_id'         => $filter->clean($src['pr_id'], 'uint'),
@@ -203,6 +223,12 @@ class InstanceModel extends AbstractTrackerDatabaseModel
 				$command = "docker exec --user root " . $container_name . " /bin/sh -c \"cd shared; ./files/add_instance.sh " . $addInstanceCmdArgs . ";\"";
 
 				exec($command, $output, $return);
+
+				$addInstanceCmdArgs = $data['target_branch'] . " " . $data['php_version'] . " " . $instanceID . '-' . $data['target_branch'];
+
+				$command = "docker exec --user root " . $container_name . " /bin/sh -c \"cd shared; ./files/add_target.sh " . $addInstanceCmdArgs . ";\"";
+
+				exec($command, $output, $return);
 			}
 			else{
 				throw new \RuntimeException('Maximum number of active Joomla! instances exceeded!');
@@ -215,6 +241,4 @@ class InstanceModel extends AbstractTrackerDatabaseModel
 		return $this;
 	}
 }
-
-
 

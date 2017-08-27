@@ -25,7 +25,7 @@
             {{ "Go to instance"|_ }}
         </a>
 
-        <a class="btn btn-primary" href="http://{{ instance.php_version ~ instance.user_id ~ instance.pr_id ~ instance.target_branch}}.dbox-tests.ml" target="_blank">
+        <a class="btn btn-primary" href="http://{{ instance.instance_id ~ '-' ~ instance.target_branch}}.dbox-tests.ml" target="_blank">
             {{ "Target branch instance"|_ }}
         </a>
     </div>

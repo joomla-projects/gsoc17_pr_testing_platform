@@ -430,7 +430,7 @@ CREATE TABLE `#__users` (
 DROP TABLE IF EXISTS `#__instances`;
 
 CREATE TABLE `#__instances` (
-  `instance_id` int(11) NOT NULL DEFAULT '0' COMMENT 'PK',
+  `instance_id` varchar(100) NOT NULL DEFAULT '0' COMMENT 'PK',
   `php_version` int(11) NOT NULL DEFAULT '0' COMMENT 'PHP Version used in the instance',
   `user_id` int(11) NOT NULL DEFAULT '0' COMMENT 'User ID',
   `pr_id` int(11) unsigned NOT NULL COMMENT 'Pull Request ID',
