@@ -160,7 +160,7 @@ class InstanceModel extends AbstractTrackerDatabaseModel
 	{
 		$filter = new InputFilter;
 
-		$instanceID = $src['php_version'] . 'u' . $src['user_id'] . 'p' . $src['pr_id'];
+		$instanceID = $src['php_version'] . '-' . $src['user_id'] . '-' . $src['pr_id'];
 
 		$src['instance_id'] = $instanceID;
 
