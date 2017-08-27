@@ -1,0 +1,78 @@
+{
+	"database": {
+		"driver"  : "mysqli",
+		"host"    : "localhost",
+		"user"    : "root",
+		"password": "",
+		"name"    : "jtracker",
+		"prefix"  : "jtr_"
+	},
+
+	"github": {
+		"client_id"    : "",
+		"client_secret": "",
+		"auth_scope"   : "public_repo",
+		"accounts": [
+			{
+				"username": "",
+				"password": ""
+			}
+		]
+	},
+
+	"transifex": {
+		"username": "",
+		"password": "",
+		"project" : ""
+	},
+
+	"renderer": {
+		"type" : "twig",
+		"cache": false
+	},
+
+	"system": {
+		"list_limit"     : "20",
+		"gzip"           : "0",
+		"offset"         : "UTC",
+		"upload_dir"     : "uploads",
+		"use_cdn"        : "1",
+		"remember_me"    : "1",
+		"error_reporting": "32767"
+	},
+
+	"cache": {
+		"enabled" : false,
+		"lifetime": 900,
+		"adapter" : "file"
+	},
+
+	"acl": {
+		"admin_users": [
+			"", ""
+		],
+		"secret"     : "not-used-yet"
+	},
+
+	"cli-application": {
+		"colors"      : "1",
+		"progress-bar": "1"
+	},
+
+	"debug": {
+		"system"  : "1",
+		"database": "1",
+		"language": "0",
+		"hooks"   : "0",
+		"logging" : "1",
+		"log-path": "/vagrant/logs",
+		"template": "0"
+	},
+
+	"validation": {
+		"mime_types": [
+			"image/png", "image/jpeg", "image/gif"
+		],
+		"file_size" : "1M"
+	}
+}

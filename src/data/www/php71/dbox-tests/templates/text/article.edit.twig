@@ -1,0 +1,97 @@
+{# Copyright (C) 2017 Open Source Matters, Inc. All rights reserved. #}
+{# GNU General Public License version 2 or later; see LICENSE.txt #}
+
+{% extends "index.twig" %}
+
+{% block title %}
+    {{ parent() }} | {{ item.article_id ? "Edit Article"|_ : "New Article"|_ }}
+{% endblock %}
+
+{% block headerCSS %}
+    {{ parent() }}
+
+    {# If in debug mode, load each file individually, otherwise use the combined source loaded by the template #}
+    {% if templateDebug %}
+    <link rel="stylesheet" href="{{ asset('css/vendor/semantic-ui-transition/transition.css', 'noversion') }}" />
+    {% endif %}
+
+    <link rel="stylesheet" href="{{ asset('css/markitup/skins/markitup/style.css', 'debug') }}" />
+    <link rel="stylesheet" href="{{ asset('css/markitup/sets/markdown/style.css', 'debug') }}" />
+{% endblock %}
+
+{% block prependMenu %}
+    <li>
+        <a class="btn-success" href="javascript:;" onclick="document.editForm.submit();">
+            {{ "Save"|_ }}
+        </a>
+    </li>
+    <li>
+        <a class="btn-inverse" href="{{ uri.base.path }}text">
+            {{ "Cancel"|_ }}
+        </a>
+    </li>
+
+    {{ parent() }}
+
+{% endblock %}
+
+{% block content %}
+    <h2>
+        {{ item.article_id ? "Edit Article"|_ : "New Article"|_ }}
+    </h2>
+
+    <form method="post" action="{{ uri.base.path }}text/save" class="form-horizontal" name="editForm">
+       <div>
+        <fieldset>
+            <div class="control-group">
+                <label class="control-label" for="title">{{ "Title"|_ }}</label>
+                <div class="controls">
+                    <input type="text" name="article[title]" id="title" value="{{ item.title }}" />
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="alias">{{ "Alias"|_ }}</label>
+                <div class="controls">
+                    <input type="text" name="article[alias]" id="alias" value="{{ item.alias }}" />
+                </div>
+            </div>
+        </fieldset>
+
+        {% set editorId="text" %}
+        {% set writeId="write" %}
+        {% set previewId="preview" %}
+        {% set editorName="article[text_md]" %}
+        {% set editorPlaceholder="Article text" %}
+        {% set editorText=item.text_md %}
+
+        {% include "editor.twig" %}
+
+        <input type="hidden" name="article[article_id]" value="{{ item.article_id }}"/>
+
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block JavaScriptBottom %}
+
+    {{ parent() }}
+
+    {# If in debug mode, load each file individually, otherwise use the combined source loaded by the template #}
+    {% if templateDebug %}
+    <script src="{{ asset('js/vendor/markitup/markitup/jquery.markitup.js') }}"></script>
+    {% endif %}
+
+    <script src="{{ asset('css/markitup/sets/markdown/set.js') }}"></script>
+
+    <script type="text/javascript">
+        $('#text').markItUp(myMarkdownSettings);
+
+        $('a[data-toggle="tab"]').on('shown', function (e) {
+            if('#preview' == $(e.target).attr('href')) {
+                JTracker.preview('#text', '#preview', '#preview');
+            }
+        });
+    </script>
+{% endblock %}
