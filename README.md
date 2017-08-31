@@ -82,3 +82,136 @@ In each instance view there is some info about the instance like PHP version, ta
 The instances are added to and removed from its respective PHP version container by using docker exec to enter those containers from inside the container where the website is located. This is achievable by sharing the docker socket descriptor file and the docker executable as read only to that container in order to be able to use docker commands within a container. JWilder nginx proxy does something similar in order to automatically generate the configuration file based on the existent containers in the same network.
 
 The website is located inside one of the PHP version containers (PHP 7.1).
+
+## Initial Setup
+
+After downloading the code from this repository you have to setup [Docker](https://www.docker.com/) and [Docker Compose](https://github.com/docker/compose) on your machine or server and setup the permissions on the folders and files. It's important from this point forward that all steps are thoroughly followed. It's also important to create a Github Repository where you can make PRs with Joomla code and a Github user for tests.
+
+### Docker & Docker Compose
+
+#### Docker CE
+
+First thing to install is Docker, consider for these instructions an Ubuntu server. The documentation explains very well the steps to install Docker CE, you can check [here](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/) for Ubuntu and for other OS's check [here](https://docs.docker.com/engine/installation/#server). 
+
+For installing on Ubuntu follow the next steps which are the same you can find in the docker documentation:
+
+1. Update the apt package index:
+```
+$ sudo apt update
+```
+
+2. Install packages to allow apt to use a repository over HTTPS:
+```
+$ sudo apt install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+```
+
+3. Add Docker’s official GPG key:
+```
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+```
+
+4. Verify that the key fingerprint is ```9DC8 5822 9FC7 DD38 854A E2D8 8D81 803C 0EBF CD88```.
+```
+$ sudo apt-key fingerprint 0EBFCD88
+pub   4096R/0EBFCD88 2017-02-22
+      Key fingerprint = 9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
+uid                  Docker Release (CE deb) <docker@docker.com>
+sub   4096R/F273FCD8 2017-02-22
+```
+
+5. Use the following command to set up the stable repository. You always need the stable repository, even if you want to install builds from the edge or test repositories as well. To add the edge or test repository, add the word edge or test (or both) after the word stable in the commands below. <tt>Note: The lsb_release -cs sub-command below returns the name of your Ubuntu distribution, such as xenial. Sometimes, in a distribution like Linux Mint, you might have to change $(lsb_release -cs) to your parent Ubuntu distribution. For example, if you are using Linux Mint Rafaela, you could use trusty.</tt>
+    
+    - amd64:
+    ```
+    $ sudo add-apt-repository \
+       "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+       $(lsb_release -cs) \
+       stable"
+    ```
+
+    - armhf:
+    ```
+    $ sudo add-apt-repository \
+       "deb [arch=armhf] https://download.docker.com/linux/ubuntu \
+       $(lsb_release -cs) \
+       stable"
+    ```
+
+    - s390x:
+    ```
+    $ sudo add-apt-repository \
+       "deb [arch=s390x] https://download.docker.com/linux/ubuntu \
+       $(lsb_release -cs) \
+       stable"
+    ```
+
+Now to install Docker CE:
+
+6. Update the apt package index:
+```
+$ sudo apt update
+```
+7. Install the latest version of Docker CE.
+```
+$ sudo apt install docker-ce
+```
+
+#### Docker Compose
+
+Now to install Docker Compose you can check the tutorial [here](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04) or follow the next few steps that are explained in the tutorial: 
+
+1. First check the latest stable release [here](https://github.com/docker/compose/releases).
+
+2. Copy the release name (1.15.0 for example) and execute the next command by placing the right release:
+```
+$ sudo curl -o /usr/local/bin/docker-compose -L "https://github.com/docker/compose/releases/download/1.15.0/docker-compose-$(uname -s)-$(uname -m)"
+```
+
+3. Next set the permissions:
+```
+$ sudo chmod +x /usr/local/bin/docker-compose
+```
+
+4. Then verify if the installation was successful by checking the version:
+```
+$ docker-compose -v
+```
+This should print out the version that was installed like this:
+```
+docker-compose version 1.15.0, build e12f3b9
+```
+
+### Folders and Files Permissions
+
+Now that Docker is installed the next step, and a very important one, is to correctly set up the permissions on the folders, sub-folders and files on the docker-compose.yml base folder. 
+
+1. cd over to where the docker-compose.yml file is located.
+
+2. Give 755 permissions to every folder and subfolder in the folder you are in.
+```
+$ find ./ -type d -exec chmod 755 {} \;
+```
+
+3. Give 644 permissions to every file in every folder and subfolder in the folder you are in.
+```
+$ find ./ -type f -exec chmod 644 {} \;
+```
+
+4. Add your user to www-data group and make www-data user and group owner of the project folder:
+```
+$ usermod -a -G www-data youruser && chown -R www-data:www-data ./
+```
+
+5. Add your user to the docker group and add the user as owner of the docker socket file so that the user inside the container can execute docker commands:
+```
+$ usermod -aG docker youruser && chown 1000:docker /var/run/docker.sock
+```
+
+6. Still in the docker-compose.yml base folder give 777 permissions to all bash scripts there and to all files inside the <tt>files/</tt> folder.
+```
+$ chmod 777 *.sh && chmod -R 777 files/
+```
