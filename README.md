@@ -382,7 +382,7 @@ $ chmod 777 cli/tracker.php
 12. To bring up the docker compose just execute the <tt>docker-compose up -d</tt> command, to bring down the docker compose execute the <tt>docker-compose down</tt> command and to look at the logs from the containers execute <tt>docker-compose logs -f</tt> or <tt>docker-compose logs</tt> command. Also to list the containers running from the docker compose run <tt>docker-compose ps</tt>. Should you want to update the images from each container execute the <tt>update-docker.sh</tt> script in the docker-compose base folder.
 
 ## Issues
-'''Note: If there are any issues while attempting to set up the platform or any suggestions to the platform itself or to the documentation don't hesitate to drop an issue in this repository.'''
+**Note: If there are any issues while attempting to set up the platform or any suggestions to the platform itself or to the documentation don't hesitate to drop an issue in this repository.**
 
 ## Future improvements
 
