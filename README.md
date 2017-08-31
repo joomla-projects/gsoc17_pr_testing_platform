@@ -47,7 +47,7 @@ So in the docker compose for this project there are 14 containers running, each 
 
 * **Jenkins container**: Jenkins was added to the service stack for this docker compose. This is the container where everything Jenkins related will be located, the Jenkins jobs and the workspace where the code will be pulled into for each job.
 
-* **[https://github.com/jwilder/nginx-proxy JWilder Nginx Proxy]**: This is the container for the automated nginx proxy for Docker containers using docker-gen which sets up a container running nginx and docker-gen. docker-gen generates reverse proxy configs for nginx and reloads nginx when containers are started and stopped. This reverse proxy was needed in order to forward the requests correctly according to the php version of the URL that's being accessed. There was a problem with knowing which of the webservers to send the requests because there was no way to know to what version an URL corresponded. I solved that issue by placing the php version on the url and using a regular expression in the VIRTUAL_HOST to proxy the requests for each php version to the right webserver container <tt>(~^56.\*\\.dbox-tests\\.ml$$, ~^70.\*\\.dbox-tests\\.ml$$ and ~^71.\*\\.dbox-tests\\.ml$$)</tt>.
+* **[JWilder Nginx Proxy](https://github.com/jwilder/nginx-proxy)**: This is the container for the automated nginx proxy for Docker containers using docker-gen which sets up a container running nginx and docker-gen. docker-gen generates reverse proxy configs for nginx and reloads nginx when containers are started and stopped. This reverse proxy was needed in order to forward the requests correctly according to the php version of the URL that's being accessed. There was a problem with knowing which of the webservers to send the requests because there was no way to know to what version an URL corresponded. I solved that issue by placing the php version on the url and using a regular expression in the VIRTUAL_HOST to proxy the requests for each php version to the right webserver container <tt>(~^56.\*\\.dbox-tests\\.ml$$, ~^70.\*\\.dbox-tests\\.ml$$ and ~^71.\*\\.dbox-tests\\.ml$$)</tt>.
 
 * **Letsencrypt Nginx Proxy Companion**: Container for SSL Support using [letsencrypt](https://letsencrypt.org/). The [letsencrypt-nginx-proxy-companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion) is a lightweight companion container for the nginx-proxy. It allows the creation/renewal of Let's Encrypt certificates automatically side by side with JWilder's nginx proxy. Currently it only generates a certificate for the main tests requests website and for Jenkins, the Joomla! instances URLs have no SSl certificates yet because the way the proxy e configured with the regular expressions the only way to have SSL certificates for those instances without constantly having to bring down the docker compose would be to issue wildcard SSL certificates and [letsencrypt will only allow this in 2018](https://letsencrypt.org/2017/07/06/wildcard-certificates-coming-jan-2018.html).
 
@@ -55,3 +55,30 @@ So in the docker compose for this project there are 14 containers running, each 
 
 Besides all of these services in the docker compose, there is also a bridge docker network in order to allow the containers that are connected to it to communicate with each other via IP address. Each container has an assigned internal IP address and is connected to that network in the docker-compose file.
 
+```
+###############################
+# NETWORK
+###############################
+networks:
+  app_net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24
+          gateway: 172.16.238.1
+```
+
+To bring up the docker compose just execute the <tt>docker-compose up -d</tt> command, to bring down the docker compose execute the <tt>docker-compose down</tt> command and to look at the logs from the containers execute <tt>docker-compose logs -f</tt> or <tt>docker-compose logs</tt> command. Also to list the containers running from the docker compose run <tt>docker-compose ps</tt>. Should you want to update the images from each container execute the <tt>update-docker.sh</tt> script in the docker-compose base folder.
+
+## Tests Requests Website
+
+The part from the last phase is the [Tests Requests Website](https://dbox-tests.ml/) which was based on the [Issue Tracker](https://issues.joomla.org/), basically added an MVC app to the tracker for the Joomla! instances, changed a bit the script to fetch the issues from the issue tracker to only fetch PRs and added a field to the Issues table to know which PRs are mergeable or not fetching only the mergeable ones (the ones with no conflicts). 
+
+In each instance view there is some info about the instance like PHP version, target branch, link to the PR and login credentials. You also have the buttons to go to the instance and another to an instance with the target branch for that PR in order to compare the Patched Joomla! instance with the No Patch instance. 
+
+The instances are added to and removed from its respective PHP version container by using docker exec to enter those containers from inside the container where the website is located. This is achievable by sharing the docker socket descriptor file and the docker executable as read only to that container in order to be able to use docker commands within a container. JWilder nginx proxy does something similar in order to automatically generate the configuration file based on the existent containers in the same network.
+
+The website is located inside one of the PHP version containers (PHP 7.1).
