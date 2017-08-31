@@ -30,9 +30,9 @@
     * [Target Branch Github PR Builder Project](#target-branch-github-pr-builder-project)
       * [Create Project](#create-project-1)
       * [Configure Project](#configure-project-1)
-  * [Tests Requests Website Setup](#tests-requests-website-setup)
-  * [Issues](#issues)
-  * [Future Improvements](#future-improvements)
+- [Tests Requests Website Setup](#tests-requests-website-setup)
+- [Issues](#issues)
+- [Future Improvements](#future-improvements)
 
 ## Introduction
 
