@@ -26,6 +26,13 @@
   * [Create Jenkins Projects](#create-jenkins-projects)
     * [Main Github PR Builder Project](#main-github-pr-builder-project)
       * [Create Project](#create-project)
+      * [Configure Project](#configure-project)
+    * [Target Branch Github PR Builder Project](#target-branch-github-pr-builder-project)
+      * [Create Project](#create-project-1)
+      * [Configure Project](#configure-project-1)
+  * [Tests Requests Website Setup](#tests-requests-website-setup)
+  * [Issues](#issues)
+  * [Future Improvements](#future-improvements)
 
 ## Introduction
 
@@ -336,3 +343,51 @@ Go to <tt>https://jenkins.yourdomain.com/</tt>, click on "New item", type a name
 4. In the "Build Environment" tab you can tick the "Set GitHub commit status with custom context and message (Must configure upstream job using GHPRB trigger)" option and then set the commit status URL, build triggered and started messages to anything you want as well as the build result messages.
 
 The projects are now fully configured with all the right settings and the webhooks successfully configured so now if you create a Pull Request on the repository or a new commit to an existent PR Jenkins will automatically build it. Also if the admins comment the trigger phrase on a PR a build will also be triggered for that PR.
+
+## Tests Requests Website Setup
+
+1. Head over to the <tt>docker-compose.yml</tt> file base folder, execute the bash71.sh script to enter the container as devilbox user, while inside cd to the website folder (dbox-tests for this project) and install the project dependencies (composer install).
+```
+$ ./bash71.sh
+
+devilbox@php-7.1.8 in /shared/httpd $ cd dbox-tests/ && composer install
+```
+
+2. After installing the dependencies give 777 permissions to the logs folder and to the <tt>htdocs/images/avatars</tt> folder in order to allow reads and writes to the github avatars and log files and exit the container.
+```
+devilbox@php-7.1.8 in /shared/httpd/dbox-tests $ chmod -R 777 logs/ && chmod -R 777 htdocs/images/avatars
+```
+
+3. Head over to the <tt>etc/</tt> folder in the website folder (<tt>data/www/php71/dbox-tests/etc/</tt>), edit the <tt>config.json</tt> file insert your database info like db driver, host(127.0.0.1), database user, database password, database name, tables prefix for that database and save the file.
+
+4. After inserting the database info on the config.json file you have to insert the Github info in the same file, but first you should create a "bot" user for this project and have an org and repository created within that org in Github meant to hold the PRs with Joomla code as referred before. 
+
+5. After creating the repo you'll have to create an oath Github app with your bot account (go to profile settings, OAuth Apps, register a new application, place an application name and your URL with your domain - <tt>https://dbox-tests.ml/</tt> for this project - in the Homepage URL and in the authorization callback URL and register the application). 
+
+6. Then you must copy your app's client ID and client secret from the oauth app created in the previous step and introduce them in the <tt>config.json</tt> file. Afterwards in accounts place your github "bot" account username and password (you can place as many accounts as you want, they are meant for the authenticated requests made to the Github API from the website) and save the file.
+
+7. Edit the <tt>mysql.sql</tt> file in the <tt>etc/</tt> folder as well, head over to the <tt>#__tracker_projects</tt> table insert and introduce your repository info. Save the file afterwards.
+
+8. Give 777 permissions to the <tt>tracker.php</tt> file in the cli/ folder from the website base folder.
+```
+$ chmod 777 cli/tracker.php
+```
+
+9.In the website base folder execute <tt>$ cli/tracker.php install</tt> in order to install the website app and create the tables by importing the <tt>mysql.sql</tt> file to the specified database in the config.json file.
+
+10. In the website base folder execute <tt>$ cli/tracker.php get project</tt> and select option 1 whenever prompted in order to obtain the latest data from the repository.
+
+11. You are now set to go and can now head over to the website and test it by creating/deleting instances from PRs.
+
+12. To bring up the docker compose just execute the <tt>docker-compose up -d</tt> command, to bring down the docker compose execute the <tt>docker-compose down</tt> command and to look at the logs from the containers execute <tt>docker-compose logs -f</tt> or <tt>docker-compose logs</tt> command. Also to list the containers running from the docker compose run <tt>docker-compose ps</tt>. Should you want to update the images from each container execute the <tt>update-docker.sh</tt> script in the docker-compose base folder.
+
+## Issues
+'''Note: If there are any issues while attempting to set up the platform or any suggestions to the platform itself or to the documentation don't hesitate to drop an issue in this repository.'''
+
+## Future improvements
+
+* Get the platform working with the Joomla! CMS repository instead of the tests repository created for this project.
+* Make the cron jobs to delete instances that are expired after 1 hour.
+* Update the website DB either by executing the tracker.php script for fetching latest data with cron jobs as well, by executing the script when a Jenkins build is done, or a combination of both.
+* Fix the issues currently with the Joomla! CMS PostgreSQL dump file in order to allow choosing the DBMS (MySQL or PostgreSQL) besides the PHP version.
+* Solve the lack of SSL certificates for the Joomla! instances URLs when letsencrypt releases the functionality to generate wildcard certificates in 2018.
