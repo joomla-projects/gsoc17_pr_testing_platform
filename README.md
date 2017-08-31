@@ -20,6 +20,12 @@
 - [Docker Compose Environment Setup](#docker-compose-environment-setup)
 - [Jenkins Setup](#jenkins-setup)
   * [Jenkins GUI Setup](#jenkins-gui-setup)
+  * [Install Plugins](#install-plugins)
+  * [Configure Jenkins Globally](#configure-jenkins-globally)
+  * [Configure Github Web Hooks](#configure-github-web-hooks)
+  * [Create Jenkins Projects](#create-jenkins-projects)
+    * [Main Github PR Builder Project](#main-github-pr-builder-project)
+      * [Create Project](#create-project)
 
 ## Introduction
 
@@ -257,3 +263,76 @@ root@php-7.1.8 in /shared/httpd $ exit
 ## Jenkins Setup
 
 ### Jenkins GUI Setup
+
+Head to <tt>jenkins.yourdomain.com</tt> to start the GUI setup. 
+
+1. To unlock Jenkins follow the instructions given on the GUI after accessing on the browser. Get the initial password from the Jenkins folder while on the docker-compose.yml base folder and copy/paste it onto the field where it asks for the password:
+```
+$ cat data/jenkins/secrets/initialAdminPassword
+```
+
+2. Select "Install Suggested Plugins" to install the default plugins, then either create a new user or continue as admin logging in with username <tt>admin</tt> and password <tt>ab56a379e3154a38acfc46b91bc0c25a</tt> and change it by clicking the "admin" tab on the right hand side of screen and "Configure" option in the menu. 
+
+3. Afterwards head to Manage Jenkins -> Configure Global Security and select the "Safe HTML" option under "Markup Formatter" section. Without this, the "Build History" section of the Jenkins jobs won't render HTML links.
+
+### Install Plugins
+
+Go to <tt>jenkins.yourdomain.com</tt>, then to Manage Jenkins -> Manage Plugins and check if the "Git plugin", "GitHub plugin", "GitHub Pull Request Builder" and "Rebuilder" plugins are or are not installed, if not find and tick those plugins for installation, click the "Install without restart" button and restart Jenkins.
+
+### Configure Jenkins Globally
+
+1. Head over to <tt>jenkins.yourdomain.com</tt>, then to Manage Jenkins -> Configure System and here add the Jenkins URL (<tt>https://jenkins.yourdomain.com/</tt>) to the "Jenkins URL" field in "Jenkins Location" and to the "Jenkins URL override" field in the "GitHub Pull Request Builder" section.
+
+2. Next click the "Add" button located next to the select box associated with "Credentials" label, select "Username with password" as "Kind" field, type in the github credentials for the bot account on the "Username" and "Password" fields and add the username into the "Admin list" textbox in order to be an allowed admin user.
+
+### Configure Github Web Hooks
+
+At this point it will be necessary to configure the Github webhooks which will listen for the events we need for building the repository.
+
+1. First thing will be to obtain the web hook URL. Go to <tt>https://jenkins.yourdomain.com/</tt>, Manage Jenkins -> Configure System and under the "GitHub" section, click "Advanced" button, tick "Specify another hook url for GitHub configuration" tickbox and obtain the URL <tt>https://jenkins.yourdomain.com/github-webhook/</tt>, then untick it again and exit settings without saving.
+
+2. After obtaining the URL next step is to enable the web hook URL in Github. Head to the Github repository for this test, click "Settings" tab, "Webhooks" menu option, "Add webhook" button and type <tt>https://jenkins.yourdomain.com/ghprbhook/</tt> into the "Payload URL" field, select x-www-form-urlencoded in "Content Type" field, tick "Let me select individual events." option and tick just Issue comment, Pull request and Push options and click "Add webhook" button. If you see a green tick icon next to the webhook URL after refreshing the page it means that the link is working.
+
+3. Final step missing is enabling the Jenkins (Github) plugin service. Head to the Github repository, click the "Settings" tab, click "Integrations & services" menu option, click "Add service" button and find Jenkins (GitHub plugin) service and type the web hook URL that was obtained in the beginning (<tt>https://jenkins.yourdomain.com/github-webhook/</tt>) into the "Payload URL" field and click the "Add service" button.
+
+### Create Jenkins Projects
+
+The next steps are to create the two necessary Jenkins projects/jobs for this project, 1 for building the PRs upon changes and pull each PR code into its own subfolder and another one which also builds the PRs upon changes but pulls the code for that PR's target branch. This way we can have the patch/no patch instances when testing PRs for comparison.
+
+#### Main Github PR Builder Project
+
+This is the main project for pulling the PR code.
+
+##### Create Project
+
+Go to <tt>https://jenkins.yourdomain.com/</tt>, click on "New item", type a name for the project in the "Enter an item name" field (it's best to name it after the name of the repository), select "Freestyle project" option and click "OK" to finish.
+
+##### Configure Project
+
+1. Go to <tt>https://jenkins.yourdomain.com/</tt>, click on the link for the job that was created in the list, click "Configure" and in the "General" tab tick "GitHub project" option, type the Github repository URL in "Project URL" field and tick "This project is parameterized" option. This will change default "Build Now" option to "Build with Parameters" in the project's menu. By default it will run the last build or if a commit hash value from the "Build History" list or GitHub pull request is passed, it will run a specific build.
+
+2. In the "Source Code Management" tab tick "Git" option, type the Github repository URL in the "Repository URL" field, in the "Credentials" select box, select the option that was previously created under [Configure Jenkins Globally](#configure-jenkins-globally) section, click the "Advanced" button then type origin in "Name" and <tt>+refs/pull/*:refs/remotes/origin/pr/*</tt> in "Refspec" field and type ${sha1} in "Branch Specifier" field. Also on "Additional Behaviours" click "Add", choose "Check out to a sub-directory" option and in "Local subdirectory for repo" place ${sha1}. This last option is meant for having the PR code be pulled into separate folders with a folder per PR.
+
+3. In "Build Triggers" tab tick "GitHub Pull Request Builder" option. You'll see that your previous configs will appear there. Then tick "Use github hooks for build triggering" option. After clicking the "Advanced" button you can add users to the allowed Admins in "Admin list" and place a trigger phrase so that a build can be triggered after a specific comment from one of the admins.
+
+4. In the "Build Environment" tab you can tick the "Set GitHub commit status with custom context and message (Must configure upstream job using GHPRB trigger)" option and then set the commit status URL, build triggered and started messages to anything you want as well as the build result messages.
+
+#### Target Branch Github PR Builder Project
+
+This is the project for pulling the PR's target branch code.
+
+##### Create Project
+
+Go to <tt>https://jenkins.yourdomain.com/</tt>, click on "New item", type a name for the project in the "Enter an item name" field (place the same name as your main project and add "-branches" like "project-name-branches" or any other name you want as long as you place the names of the projects in the script files to add/remove instances and target branch in the <tt>files</tt>/ folder), select "Freestyle project" option and click "OK" to finish.
+
+##### Configure Project
+
+1. Go to <tt>https://jenkins.yourdomain.com/</tt>, click on the link for the job that was created in the list, click "Configure" and in the "General" tab tick "GitHub project" option, type the Github repository URL in "Project URL" field and tick "This project is parameterized" option. This will change default "Build Now" option to "Build with Parameters" in the project's menu. By default it will run the last build or if a commit hash value from the "Build History" list or GitHub pull request is passed, it will run a specific build.
+
+2. In the "Source Code Management" tab tick "Git" option, type the Github repository URL in the "Repository URL" field, in the "Credentials" select box, select the option that was previously created under the [Configure Jenkins Globally](#configure-jenkins-globally) section, click the "Advanced" button then type branches in "Name" and <tt>+refs/heads/*:refs/remotes/branches/*</tt> in "Refspec" field and type ${ghprbTargetBranch} in "Branch Specifier" field. Also on "Additional Behaviours" click "Add", choose "Check out to a sub-directory" option and in "Local subdirectory for repo" place ${ghprbTargetBranch}. This last option is meant for having the PR's target branch code be pulled into separate folders with a folder for the target branch.
+
+3. In "Build Triggers" tab tick "GitHub Pull Request Builder" option. You'll see that your previous configs will appear there. Then tick "Use github hooks for build triggering" option. After clicking the "Advanced" button you can add users to the allowed Admins in "Admin list" and place a trigger phrase so that a build can be triggered after a specific comment from one of the admins.
+
+4. In the "Build Environment" tab you can tick the "Set GitHub commit status with custom context and message (Must configure upstream job using GHPRB trigger)" option and then set the commit status URL, build triggered and started messages to anything you want as well as the build result messages.
+
+The projects are now fully configured with all the right settings and the webhooks successfully configured so now if you create a Pull Request on the repository or a new commit to an existent PR Jenkins will automatically build it. Also if the admins comment the trigger phrase on a PR a build will also be triggered for that PR.
