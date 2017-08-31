@@ -1,11 +1,27 @@
 #  GSoC 2017 Joomla PR Testing Platform
 ![JGSoC](http://sempreupdate.com.br/wp-content/uploads/2016/06/gsoc-joomla-2016.jpg)
 
-## Introduction
 ---------------------
 * You can check the working prototype for this project here: **[PR Testing Platform](https://dbox-tests.ml/)**
 
 * And the documentation here: **[PR Testing Platform JDoc page](https://docs.joomla.org/PR_Testing_Platform)**
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Jenkins](#jenkins)
+- [Multi-container Setup](#multi-container-setup)
+- [Tests Requests Website](#tests-requests-website)
+- [Initial Setup](#initial-setup)
+  * [Docker & Docker Compose](#docker--docker-compose)
+    * [Docker CE](#docker-ce)
+    * [Docker Compose](#docker-compose)
+  * [Folders and Files Permissions](#folders-and-files-permissions)
+- [Docker Compose Environment Setup](#docker-compose-environment-setup)
+- [Jenkins Setup](#jenkins-setup)
+  * [Jenkins GUI Setup](#jenkins-gui-setup)
+
+## Introduction
 
 The **main goal** here is to automate the creation/setup of a testing environment for Joomla! CMS and with this shift the tester’s focus entirely to what really matters and test Joomla! instances almost instantaneously.
 
@@ -17,7 +33,7 @@ Before going into the setup process in more detail let's go over each part of th
 
 The platform is composed of 3 parts, the **[Jenkins](https://jenkins.dbox-tests.ml/) setup**, the **multi-container setup** based on **[Devilbox](https://github.com/cytopia/devilbox)** and the **[website for the tests requests](https://dbox-tests.ml/)**.
 
-## Jenkins setup
+## Jenkins
 
 ![Jenkins](https://raw.githubusercontent.com/docker-library/docs/3ab4dafb41dd0e959ff9322b3c50af2519af6d85/jenkins/logo.png)
 
@@ -215,3 +231,29 @@ $ usermod -aG docker youruser && chown 1000:docker /var/run/docker.sock
 ```
 $ chmod 777 *.sh && chmod -R 777 files/
 ```
+
+## Docker Compose Environment Setup
+
+Now that the initial setup is done time to configure our <tt>docker-compose.yml</tt> and <tt>.env</tt> files before bringing the docker compose online.
+
+1. Edit the <tt>.env</tt> file and look for the <tt>TLD_SUFFIX</tt> environment variable, place your domain suffix (for a domain.com you would place TLD_SUFFIX=com) and then save the file.
+
+2. Edit the <tt>.env</tt> file, look for the <tt>MYSQL_ROOT_PASSWORD</tt> and the <tt>PGSQL_ROOT_PASSWORD</tt> environment variables and choose a password for the mysql and postgres users (it is recommended that a strong password is used with alfa-numeric digits, caps and no-caps characters).
+
+3. Edit the <tt>docker-compose.yml</tt> and look for the <tt>LETSENCRYPT_EMAIL</tt> environment variable occurrences throughout the file and replace <tt>email@example.com</tt> with your email for the ssl certificates generation/renewal, look for any occurrence of the <tt>VIRTUAL_HOST</tt> and <tt>LETSENCRYPT_HOST</tt> environment variables in the services and replace <tt>dbox-tests</tt> by your <tt>domain</tt> and <tt>ml</tt> by your domain <tt>suffix</tt> (domain.suffix) and save the file.
+
+4. Next execute <tt>$ docker-compose up -d</tt> command to bring up the docker compose. It will then start pulling the docker images in order to create the containers.
+
+5. After it is done bringing the docker compose up, give ownership of the <tt>jenkins/</tt> folder in the <tt>data/</tt> folder to your user in order for the container to allow the Jenkins container to freely write/rewrite changes on files: <tt>$ chown -R 1000:1000 data/jenkins/</tt> 
+
+6. Execute the <tt>root_bash71.sh</tt> bash file to enter the php 7.1 container as root user, give 755 permissions to the dbox-tests folder and everything inside (dbox-tests is you domain name, you have to change this to your own domain), make the devilbox user inside the container its owner and exit the container:
+```
+$ ./root_bash71.sh
+
+root@php-7.1.8 in /shared/httpd $ chmod -R 755 dbox-tests/ && chown -R devilbox:devilbox dbox-tests/
+root@php-7.1.8 in /shared/httpd $ exit
+```
+
+## Jenkins Setup
+
+### Jenkins GUI Setup
